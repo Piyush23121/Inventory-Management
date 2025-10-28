@@ -18,8 +18,10 @@ public class  SwaggerConfig {
                         .title("Inventory Management API")
                         .description("API documentation for Inventory Management System ")
                         .version("1.0.0"))
+
+                //this tell swagger that api are secure using security bearer auth
                 .addSecurityItem(new SecurityRequirement().addList("BearerAuth"))
-                .components(new Components()
+                .components(new Components()//so security bearer auth can be reused
                         .addSecuritySchemes("BearerAuth",
                                 new SecurityScheme()
                                         .name("BearerAuth")

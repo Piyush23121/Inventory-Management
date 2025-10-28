@@ -6,26 +6,34 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
-@Entity
-@Table(name = "transactionlog")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionLog {
+@Entity
+@Table(name = "dealers")
+public class Dealer {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long productId;
-    private Long userID;
-    private String changeType;
-    private int quantityChanged;
+    private String name;
+    private String email;
+    private String password;
+    private String mobileNo;
+    private String address;
+    private String status;
+
+    @Enumerated(EnumType.STRING)
+    private RoleType role;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 
 }

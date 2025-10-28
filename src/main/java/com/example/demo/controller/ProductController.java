@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springdoc.core.annotations.ParameterObject;
 
 import java.util.List;
 
@@ -45,7 +46,7 @@ public class ProductController {
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) Double minPrice,
             @RequestParam(required = false) Double maxPrice,
-            Pageable pageable ){
+            @ParameterObject  Pageable pageable ){
         Page<ProductDTO> products=productService.getAllProducts(category, brand, minPrice, maxPrice, pageable);
         return ResponseEntity.ok(new BaseResponseDTO<>("Success","Products fetched Successfully", products));
     }

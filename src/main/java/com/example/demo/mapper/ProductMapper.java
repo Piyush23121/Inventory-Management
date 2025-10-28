@@ -2,7 +2,9 @@ package com.example.demo.mapper;
 
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.Product;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ProductMapper {
     //convert product entity to product dto
 

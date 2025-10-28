@@ -1,6 +1,5 @@
 package com.example.demo.entity;
 
-
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,44 +7,34 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.springframework.boot.autoconfigure.web.WebProperties;
 
 import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "users")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+@Entity
+@Table(name = "customers")
+public class Customer {
+
 
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
         private Long id;
 
         private String name;
-
-        @Column(nullable = false, unique = true)
         private String email;
-
         private String password;
-
-        @Enumerated(EnumType.STRING)
-
-        private RoleType role;
-        @Column(name = "mobile_no")
         private String mobileNo;
         private String address;
         private String status;
 
+        @Enumerated(EnumType.STRING)
+        private RoleType role;
+
         @CreationTimestamp
-        @Column(updatable = false)
         private LocalDateTime createdAt;
 
         @UpdateTimestamp
         private LocalDateTime updatedAt;
 
-}
-
-
+    }
