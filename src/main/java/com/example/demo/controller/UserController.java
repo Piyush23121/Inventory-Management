@@ -35,7 +35,7 @@ public class    UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
         }
         @PatchMapping("/updateUser/{id}")
-        public ResponseEntity<ResponseDto> updateUser(@PathVariable Long id,@RequestBody UserDTO userDTO,Authentication authentication,DealerDto dealerDto){
+        public ResponseEntity<ResponseDto> updateUser(@PathVariable Long id,@RequestBody UserDTO userDTO,Authentication authentication){
         userService.updateUser(id,userDTO,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User updated successfully");
         return ResponseEntity.ok(responseDto);

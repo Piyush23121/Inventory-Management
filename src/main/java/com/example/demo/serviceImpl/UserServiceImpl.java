@@ -55,73 +55,31 @@ public class UserServiceImpl implements UserService {
 
         // Base User
 
-        User user = new User();
-        copyCommonFields(user, userDTO, encodedPass, role);
+        User user = UserMapper.toEntity(userDTO);
+        user.setPassword(encodedPass);
+        user.setRole(role);
         user = userRepository.save(user); // Save in users table
 
         // Duplicate in role table
 
         switch (role) {
             case ADMIN -> {
-                Admin admin = new Admin();
-                copyCommonFields(admin, userDTO, encodedPass, role);
+                Admin admin = UserMapper.toAdmin(user);
                 admin.setId(user.getId());
                 adminRepository.save(admin);
             }
             case DEALER -> {
-                Dealer dealer = new Dealer();
-                copyCommonFields(dealer, userDTO, encodedPass, role);
+                Dealer dealer = UserMapper.toDealer(user,userDTO);
                 dealer.setId(user.getId());
                 dealerRepository.save(dealer);
             }
             case CUSTOMER -> {
-                Customer customer = new Customer();
-                copyCommonFields(customer, userDTO, encodedPass, role);
+                Customer customer = UserMapper.toCustomer(user);
                 customer.setId(user.getId());
                 customerRepository.save(customer);
             }
         }
         return UserMapper.toDTO(user);
-    }
-
-    private void copyCommonFields(Object target, UserDTO dto, String encodedPassword, RoleType role) {
-        if (target instanceof User u) {
-            u.setName(dto.getName());
-            u.setEmail(dto.getEmail());
-            u.setPassword(encodedPassword);
-            u.setMobileNo(dto.getMobileNo());
-            u.setAddress(dto.getAddress());
-            u.setStatus(dto.getStatus());
-            u.setRole(role);
-
-        } else if (target instanceof Admin a) {
-            a.setName(dto.getName());
-            a.setEmail(dto.getEmail());
-            a.setPassword(encodedPassword);
-            a.setMobileNo(dto.getMobileNo());
-            a.setAddress(dto.getAddress());
-            a.setStatus(dto.getStatus());
-            a.setRole(role);
-
-        } else if (target instanceof Dealer d) {
-            d.setName(dto.getName());
-            d.setEmail(dto.getEmail());
-            d.setPassword(encodedPassword);
-            d.setMobileNo(dto.getMobileNo());
-            d.setAddress(dto.getAddress());
-            d.setStatus(dto.getStatus());
-            d.setRole(role);
-        } else if (target instanceof Customer c) {
-            c.setName(dto.getName());
-            c.setEmail(dto.getEmail());
-            c.setPassword(encodedPassword);
-            c.setMobileNo(dto.getMobileNo());
-            c.setAddress(dto.getAddress());
-            c.setStatus(dto.getStatus());
-            c.setRole(role);
-
-        }
-
     }
 
 @Override
@@ -182,9 +140,6 @@ public class UserServiceImpl implements UserService {
         User targetedUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-//        Dealer targetedDealer=dealerRepository.findByEmail(currentEmail)
-//                .orElseThrow(()-> new ResourceNotFoundException("Dealer not found with id: "+id));
-
 //check role and give permission
         RoleType currentRole = currentUser.getRole();
 
@@ -194,8 +149,7 @@ public class UserServiceImpl implements UserService {
             if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
             if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
             if(userDTO.getStatus()!=null) targetedUser.setStatus(userDTO.getStatus());
-//            if(dealerDto.getCompanyName()!=null) targetedDealer.setCompanyName(dealerDto.getCompanyName());
-//            if (dealerDto.getGstinNo()!=null) targetedDealer.setGstinNo(dealerDto.getGstinNo());
+            if(userDTO.getAddress()!=null)targetedUser.setAddress(userDTO.getAddress());
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             String encodedPass = passwordEncoder.encode(userDTO.getPassword());
@@ -211,19 +165,19 @@ public class UserServiceImpl implements UserService {
                 case ADMIN -> {
                     Admin admin=adminRepository.findById(updatedUser.getId())
                             .orElseThrow(()-> new ResourceNotFoundException("Admin record missing"));
-                    updateRole(admin,updatedUser);
+                    admin=UserMapper.toAdmin(updatedUser,admin);
                     adminRepository.save(admin);
                 }
                 case DEALER -> {
                     Dealer dealer=dealerRepository.findById(updatedUser.getId())
                             .orElseThrow(()-> new ResourceNotFoundException("Dealer record missing"));
-                    updateRole(dealer,updatedUser);
+                    dealer=UserMapper.toDealer(updatedUser,userDTO,dealer);
                     dealerRepository.save(dealer);
                 }
                 case CUSTOMER -> {
                     Customer customer=customerRepository.findById(updatedUser.getId())
                             .orElseThrow(()-> new ResourceNotFoundException("Customer is missing"));
-                    updateRole(customer,updatedUser);
+                   customer=UserMapper.toCustomer(updatedUser,customer);
                     customerRepository.save(customer);
                 }
             }
