@@ -1,6 +1,9 @@
 package com.example.demo.mapper;
 
 import com.example.demo.dto.UserDTO;
+import com.example.demo.entity.Admin;
+import com.example.demo.entity.Customer;
+import com.example.demo.entity.Dealer;
 import com.example.demo.entity.User;
 
 public class UserMapper {
@@ -16,8 +19,6 @@ public class UserMapper {
         dto.setAddress(user.getAddress());
         dto.setRole(user.getRole());
         dto.setStatus(user.getStatus());
-        dto.setCreatedAt(user.getCreatedAt());
-        dto.setUpdatedAt(user.getUpdatedAt());
 
         return dto;
     }
@@ -35,9 +36,85 @@ public class UserMapper {
         user.setAddress(dto.getAddress());
         user.setRole(dto.getRole());
         user.setStatus(dto.getStatus());
-        user.setCreatedAt(dto.getCreatedAt());
-        user.setUpdatedAt(dto.getUpdatedAt());
+
 
         return user;
+    }
+    public static Admin toAdmin(User user){
+        Admin admin=new Admin();
+        admin.setName(user.getName());
+        admin.setEmail(user.getEmail());
+        admin.setPassword(user.getPassword());
+        admin.setMobileNo(user.getMobileNo());
+        admin.setAddress(user.getAddress());
+        admin.setStatus(user.getStatus());
+        admin.setRole(user.getRole());
+
+        return admin;
+    }
+    public static Dealer toDealer(User user,UserDTO userDTO){
+        Dealer dealer =new Dealer();
+        dealer.setAddress(user.getAddress());
+        dealer.setEmail(user.getEmail());
+        dealer.setStatus(user.getStatus());
+        dealer.setPassword(user.getPassword());
+        dealer.setName(user.getName());
+        dealer.setMobileNo(user.getMobileNo());
+        dealer.setRole(user.getRole());
+        dealer.setCompanyName(userDTO.getCompanyName());
+        dealer.setGstinNo(userDTO.getGstinNo());
+
+        return dealer;
+    }
+    public static Customer toCustomer(User user){
+        Customer customer=new Customer();
+        customer.setName(user.getName());
+        customer.setEmail(user.getEmail());
+        customer.setPassword(user.getPassword());
+        customer.setMobileNo(user.getMobileNo());
+        customer.setAddress(user.getAddress());
+        customer.setStatus(user.getStatus());
+        customer.setRole(user.getRole());
+
+        return customer;
+    }
+    public static Admin toAdmin(User user, Admin admin){
+
+        admin.setName(user.getName());
+        admin.setEmail(user.getEmail());
+        admin.setPassword(user.getPassword());
+        admin.setMobileNo(user.getMobileNo());
+        admin.setAddress(user.getAddress());
+        admin.setStatus(user.getStatus());
+        admin.setRole(user.getRole());
+
+        return admin;
+    }
+    public static Customer toCustomer(User user,Customer customer){
+
+        customer.setName(user.getName());
+        customer.setEmail(user.getEmail());
+        customer.setPassword(user.getPassword());
+        customer.setMobileNo(user.getMobileNo());
+        customer.setAddress(user.getAddress());
+        customer.setStatus(user.getStatus());
+        customer.setRole(user.getRole());
+
+        return customer;
+    }
+    public static Dealer toDealer(User user,UserDTO userDTO,Dealer dealer) {
+
+        dealer.setAddress(user.getAddress());
+        dealer.setEmail(user.getEmail());
+        dealer.setStatus(user.getStatus());
+        dealer.setPassword(user.getPassword());
+        dealer.setName(user.getName());
+        dealer.setMobileNo(user.getMobileNo());
+        dealer.setRole(user.getRole());
+        dealer.setCompanyName(userDTO.getCompanyName());
+        dealer.setGstinNo(userDTO.getGstinNo());
+
+        return dealer;
+
     }
 }

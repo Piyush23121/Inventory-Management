@@ -24,6 +24,8 @@ public class Dealer {
     private String email;
     private String password;
     private String mobileNo;
+    private String companyName;
+    private String gstinNo;
     private String address;
     private String status;
 

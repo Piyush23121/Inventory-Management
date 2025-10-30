@@ -23,4 +23,6 @@ public class UserDTO {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private String companyName;
+    private String gstinNo;
 }

@@ -169,8 +169,8 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Override
     @Transactional
+    @Override
     public UserDTO updateUser(Long id, UserDTO userDTO, Authentication authentication) {
         //Get currently logged in user
         String currentEmail = authentication.getName();
@@ -182,6 +182,9 @@ public class UserServiceImpl implements UserService {
         User targetedUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
+//        Dealer targetedDealer=dealerRepository.findByEmail(currentEmail)
+//                .orElseThrow(()-> new ResourceNotFoundException("Dealer not found with id: "+id));
+
 //check role and give permission
         RoleType currentRole = currentUser.getRole();
 
@@ -191,6 +194,8 @@ public class UserServiceImpl implements UserService {
             if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
             if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
             if(userDTO.getStatus()!=null) targetedUser.setStatus(userDTO.getStatus());
+//            if(dealerDto.getCompanyName()!=null) targetedDealer.setCompanyName(dealerDto.getCompanyName());
+//            if (dealerDto.getGstinNo()!=null) targetedDealer.setGstinNo(dealerDto.getGstinNo());
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             String encodedPass = passwordEncoder.encode(userDTO.getPassword());
@@ -199,6 +204,7 @@ public class UserServiceImpl implements UserService {
         }
         //save and return updated user
             User updatedUser = userRepository.save(targetedUser);
+
 
         //update same rcord in role table
             switch (updatedUser.getRole()){
@@ -234,13 +240,7 @@ public class UserServiceImpl implements UserService {
             a.setMobileNo(user.getMobileNo());
             a.setAddress(user.getAddress());
             a.setStatus(user.getStatus());
-        } else if (target instanceof Dealer d) {
-            d.setName(user.getName());
-            d.setEmail(user.getEmail());
-            d.setPassword(user.getPassword());
-            d.setMobileNo(user.getMobileNo());
-            d.setAddress(user.getAddress());
-            d.setStatus(user.getStatus());
+
         } else if (target instanceof Customer c) {
             c.setName(user.getName());
             c.setEmail(user.getEmail());
@@ -248,7 +248,27 @@ public class UserServiceImpl implements UserService {
             c.setMobileNo(user.getMobileNo());
             c.setAddress(user.getAddress());
             c.setStatus(user.getStatus());
+        } else if (target instanceof Dealer d) {
+            d.setName(user.getName());
+            d.setEmail(user.getEmail());
+            d.setPassword(user.getPassword());
+            d.setMobileNo(user.getMobileNo());
+            d.setAddress(user.getAddress());
+            d.setStatus(user.getStatus());
 
         }
+
     }
-}
+//    private void updateRoleDealer(Object target,Dealer dealer){
+//        if(target instanceof Dealer d){
+//            d.setName(dealer.getName());
+//            d.setEmail(dealer.getEmail());
+//            d.setPassword(dealer.getPassword());
+//            d.setMobileNo(dealer.getMobileNo());
+//            d.setAddress(dealer.getAddress());
+//            d.setStatus(dealer.getStatus());
+//            d.setCompanyName(dealer.getCompanyName());
+//            d.setGstinNo(dealer.getGstinNo());
+//        }
+    }
+
