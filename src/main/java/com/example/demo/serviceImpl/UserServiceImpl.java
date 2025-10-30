@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.serviceImpl;
 
 import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
@@ -13,6 +13,7 @@ import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.DealerRepository;
 import com.example.demo.repository.UserRepository;
 import com.example.demo.security.Jwt;
+import com.example.demo.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -66,9 +67,7 @@ public class UserServiceImpl implements UserService {
                 copyCommonFields(admin, userDTO, encodedPass, role);
                 admin.setId(user.getId());
                 adminRepository.save(admin);
-
             }
-
             case DEALER -> {
                 Dealer dealer = new Dealer();
                 copyCommonFields(dealer, userDTO, encodedPass, role);
@@ -81,11 +80,8 @@ public class UserServiceImpl implements UserService {
                 customer.setId(user.getId());
                 customerRepository.save(customer);
             }
-
         }
-
         return UserMapper.toDTO(user);
-
     }
 
     private void copyCommonFields(Object target, UserDTO dto, String encodedPassword, RoleType role) {
@@ -194,6 +190,7 @@ public class UserServiceImpl implements UserService {
             if (userDTO.getName() != null) targetedUser.setName(userDTO.getName());
             if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
             if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
+            if(userDTO.getStatus()!=null) targetedUser.setStatus(userDTO.getStatus());
 
         if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
             String encodedPass = passwordEncoder.encode(userDTO.getPassword());

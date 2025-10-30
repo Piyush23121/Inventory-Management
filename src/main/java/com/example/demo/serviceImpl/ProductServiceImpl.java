@@ -1,13 +1,16 @@
-package com.example.demo.service;
+package com.example.demo.serviceImpl;
 
 import com.example.demo.dto.ProductDTO;
+import com.example.demo.entity.Dealer;
 import com.example.demo.entity.Product;
-import com.example.demo.entity.RoleType;
 import com.example.demo.entity.User;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.ProductMapper;
+import com.example.demo.repository.DealerRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.repository.UserRepository;
+import com.example.demo.service.ProductService;
+import com.example.demo.service.TransactionLogService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,35 +21,36 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductServiceImpl implements ProductService{
+public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired
-    TransactionLogService transactionLogService;
+    private TransactionLogService transactionLogService;
+    @Autowired
+    private DealerRepository dealerRepository;
 
     @Override
     public ProductDTO addProduct(ProductDTO productDTO){
+        //Covert dto to entity before saving
         Product product= ProductMapper.toEntity(productDTO);
         //Get login user email from jwt token
         Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
         String email=authentication.getName();
 
         //Fetch user details from db
-        User user=userRepository.findByEmail(email)
-                .orElseThrow(()->new ResourceNotFoundException("User not found: "+email));
+         Dealer dealer=dealerRepository.findByEmail(email)
+                .orElseThrow(()->new ResourceNotFoundException("Dealer not found: "+email));
 
        //Auto assign dealer id
+            product.setDealerId(dealer.getId());
 
-            product.setDealerId(user.getId());
-
-
+//save product
         Product savedProduct=productRepository.save(product);
         return ProductMapper.toDTO(savedProduct);
     }
@@ -65,10 +69,10 @@ public class ProductServiceImpl implements ProductService{
         Page<Product> products= productRepository.findAll(pageable);
         return new PageImpl<>(
                 products.stream()
-                        .filter(p ->category==null || p.getCategory().equalsIgnoreCase(category))
-                        .filter(p ->brand==null || p.getBrand().equalsIgnoreCase(brand))
-                        .filter(p ->minPrice==null || p.getPrice()>=minPrice)
-                        .filter(p ->maxPrice==null || p.getPrice()<=maxPrice)
+                        .filter(product ->category==null || product.getCategory().equalsIgnoreCase(category))
+                        .filter(product ->brand==null || product.getBrand().equalsIgnoreCase(brand))
+                        .filter(product ->minPrice==null || product.getPrice()>=minPrice)
+                        .filter(product ->maxPrice==null || product.getPrice()<=maxPrice)
                         .map(ProductMapper::toDTO)
                         .collect(Collectors.toList()),
                 pageable,
