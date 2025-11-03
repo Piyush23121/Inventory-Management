@@ -35,7 +35,7 @@ public class UserMapper {
         user.setMobileNo(dto.getMobileNo());
         user.setAddress(dto.getAddress());
         user.setRole(dto.getRole());
-        user.setStatus("ACTIVE");
+        user.setStatus(dto.getStatus());
 
 
         return user;
@@ -47,7 +47,7 @@ public class UserMapper {
         admin.setPassword(user.getPassword());
         admin.setMobileNo(user.getMobileNo());
         admin.setAddress(user.getAddress());
-        admin.setStatus("ACTIVE");
+        admin.setStatus(user.getStatus());
        // admin.setRole(user.getRole());
 
         return admin;
@@ -56,7 +56,7 @@ public class UserMapper {
         Dealer dealer =new Dealer();
         dealer.setAddress(user.getAddress());
         dealer.setEmail(user.getEmail());
-        dealer.setStatus("ACTIVE");
+        dealer.setStatus(user.getStatus());
         dealer.setPassword(user.getPassword());
         dealer.setName(user.getName());
         dealer.setMobileNo(user.getMobileNo());
@@ -73,7 +73,7 @@ public class UserMapper {
         customer.setPassword(user.getPassword());
         customer.setMobileNo(user.getMobileNo());
         customer.setAddress(user.getAddress());
-        customer.setStatus("ACTIVE");
+        customer.setStatus(user.getStatus());
        // customer.setRole(user.getRole());
 
         return customer;

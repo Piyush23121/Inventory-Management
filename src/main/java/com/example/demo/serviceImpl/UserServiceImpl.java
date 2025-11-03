@@ -172,19 +172,19 @@ public class UserServiceImpl implements UserService {
             //update same rcord in role table
             switch (updatedUser.getRole()) {
                 case ADMIN -> {
-                    Admin admin = adminRepository.findById(updatedUser.getId())
+                    Admin admin = adminRepository.findByUserId(updatedUser.getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Admin record missing"));
                     admin = UserMapper.toAdmin(updatedUser, admin);
                     adminRepository.save(admin);
                 }
                 case DEALER -> {
-                    Dealer dealer = dealerRepository.findById(updatedUser.getId())
+                    Dealer dealer = dealerRepository.findByUserId(updatedUser.getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Dealer record missing"));
                     dealer = UserMapper.toDealer(updatedUser, userDTO, dealer);
                     dealerRepository.save(dealer);
                 }
                 case CUSTOMER -> {
-                    Customer customer = customerRepository.findById(updatedUser.getId())
+                    Customer customer = customerRepository.findByUserId(updatedUser.getId())
                             .orElseThrow(() -> new ResourceNotFoundException("Customer is missing"));
                     customer = UserMapper.toCustomer(updatedUser, customer);
                     customerRepository.save(customer);
