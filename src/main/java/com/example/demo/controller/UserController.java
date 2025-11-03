@@ -2,6 +2,7 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.*;
 import com.example.demo.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +17,7 @@ public class    UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<ResponseDto> registerUser(@RequestBody UserDTO userDTO){ //take data from req body and covert it into user dto obj
+    public ResponseEntity<ResponseDto> registerUser(@Valid @RequestBody UserDTO userDTO){ //take data from req body and covert it into user dto obj
         userService.registerUser(userDTO); //calls the service method to register user
          ResponseDto responseDto=new ResponseDto("Success","User Registered Successfully");
          return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);//rturn 200 ok resp with saved user details
@@ -35,7 +36,7 @@ public class    UserController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
         }
         @PatchMapping("/updateUser/{id}")
-        public ResponseEntity<ResponseDto> updateUser(@PathVariable Long id,@RequestBody UserDTO userDTO,Authentication authentication){
+        public ResponseEntity<ResponseDto> updateUser(@Valid @PathVariable Long id,@RequestBody UserDTO userDTO,Authentication authentication){
         userService.updateUser(id,userDTO,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User updated successfully");
         return ResponseEntity.ok(responseDto);

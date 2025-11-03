@@ -48,7 +48,7 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(()->new ResourceNotFoundException("Dealer not found: "+email));
 
        //Auto assign dealer id
-            product.setDealerId(dealer.getId());
+            product.setDealerId(dealer.getUserId());
 
 //save product
         Product savedProduct=productRepository.save(product);

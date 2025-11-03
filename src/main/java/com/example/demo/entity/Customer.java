@@ -19,8 +19,10 @@ public class Customer {
 
 
         @Id
-        @GeneratedValue(strategy = GenerationType.IDENTITY)
-        private Long CId;
+        private String CId;
+
+        @Column(nullable = false)
+        private Long userId;
 
         private String name;
         private String email;
@@ -29,16 +31,12 @@ public class Customer {
         private String address;
         private String status;
 
-        @Enumerated(EnumType.STRING)
-        private RoleType role;
-
         @CreationTimestamp
+        @Column(updatable = false)
         private LocalDateTime createdAt;
 
         @UpdateTimestamp
         private LocalDateTime updatedAt;
 
-        @Column(nullable = false)
-        private Long id;
 
     }

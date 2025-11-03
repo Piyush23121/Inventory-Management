@@ -61,22 +61,30 @@ public class UserServiceImpl implements UserService {
         user = userRepository.save(user); // Save in users table
 
         // Duplicate in role table
+        synchronized (this) {  //prevent duplcate id
 
-        switch (role) {
-            case ADMIN -> {
-                Admin admin = UserMapper.toAdmin(user);
-                admin.setId(user.getId());
-                adminRepository.save(admin);
-            }
-            case DEALER -> {
-                Dealer dealer = UserMapper.toDealer(user, userDTO);
-                dealer.setId(user.getId());
-                dealerRepository.save(dealer);
-            }
-            case CUSTOMER -> {
-                Customer customer = UserMapper.toCustomer(user);
-                customer.setId(user.getId());
-                customerRepository.save(customer);
+            switch (role) {
+                case ADMIN -> {
+                    long adminCount = adminRepository.count();
+                    Admin admin = UserMapper.toAdmin(user);
+                    admin.setAid("A" + (adminCount + 1));
+                    admin.setUserId(user.getId());
+                    adminRepository.save(admin);
+                }
+                case DEALER -> {
+                    long dealerCount = dealerRepository.count();
+                    Dealer dealer = UserMapper.toDealer(user, userDTO);
+                    dealer.setDId("D" + (dealerCount + 1));
+                    dealer.setUserId(user.getId());
+                    dealerRepository.save(dealer);
+                }
+                case CUSTOMER -> {
+                    long customerCount = customerRepository.count();
+                    Customer customer = UserMapper.toCustomer(user);
+                    customer.setCId("C" + (customerCount + 1));
+                    customer.setUserId(user.getId());
+                    customerRepository.save(customer);
+                }
             }
         }//returndto back
         return UserMapper.toDTO(user);
@@ -141,10 +149,10 @@ public class UserServiceImpl implements UserService {
         User targetedUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-//check role and give permission
-        RoleType currentRole = currentUser.getRole();
-//admin can update anyone
-        if (currentRole == RoleType.ADMIN || currentUser.getId().equals(targetedUser.getId())) {
+        //user can update itself only
+        if (!currentUser.getId().equals(targetedUser.getId())) {
+            throw new AccessDeniedException("Plz update your own account");
+        }
 //only update these fields
             if (userDTO.getName() != null) targetedUser.setName(userDTO.getName());
             if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
@@ -153,8 +161,8 @@ public class UserServiceImpl implements UserService {
             if (userDTO.getAddress() != null) targetedUser.setAddress(userDTO.getAddress());
 
             if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-                String encodedPass = passwordEncoder.encode(userDTO.getPassword());
-                targetedUser.setPassword(encodedPass);
+                targetedUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+
 
             }
             //save and return updated user
@@ -181,10 +189,8 @@ public class UserServiceImpl implements UserService {
                     customer = UserMapper.toCustomer(updatedUser, customer);
                     customerRepository.save(customer);
                 }
+
             }//return updated user dto
             return UserMapper.toDTO(updatedUser);
-        } else {
-            throw new AccessDeniedException("You are not allowed to update other User");
         }
     }
-}

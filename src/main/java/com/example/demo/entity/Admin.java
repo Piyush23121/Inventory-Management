@@ -18,8 +18,10 @@ import java.time.LocalDateTime;
 public class Admin {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long AId;
+    private String Aid;
+
+    @Column(nullable = false)
+    private Long userId;
 
     private String name;
     private String email;
@@ -28,16 +30,12 @@ public class Admin {
     private String address;
     private String status;
 
-    @Enumerated(EnumType.STRING)
-    private RoleType role;
-
     @CreationTimestamp
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    @Column(nullable = false)
-    private Long id;
 
 }
