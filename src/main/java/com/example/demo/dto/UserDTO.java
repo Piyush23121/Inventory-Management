@@ -26,21 +26,15 @@ public class UserDTO {
     private String name;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format (e.g., tony@gmail.com)")
+    @Email(message = "Invalid email format ")
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Pattern(
-            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$",
-            message = "Password must contain at least 8 chars, one uppercase, one lowercase, one number, and one special character"
-    )
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$")
     private String password;
 
     @NotBlank(message = "Mobile number is required")
-    @Pattern(
-            regexp = "^[6-9][0-9]{9}$",
-            message = "Mobile number must start with 6-9 and be exactly 10 digits"
-    )
+    @Pattern(regexp = "^[6-9][0-9]{9}$")
     private String mobileNo;
 
     @NotBlank(message = "Address is required")
