@@ -19,7 +19,8 @@ public class Customer {
 
 
         @Id
-        private Long id;
+        @GeneratedValue(strategy = GenerationType.IDENTITY)
+        private Long CId;
 
         private String name;
         private String email;
@@ -36,5 +37,8 @@ public class Customer {
 
         @UpdateTimestamp
         private LocalDateTime updatedAt;
+
+        @Column(nullable = false)
+        private Long id;
 
     }

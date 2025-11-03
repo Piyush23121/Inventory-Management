@@ -18,13 +18,16 @@ import java.time.LocalDateTime;
 public class Dealer {
 
     @Id
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long DId;
 
     private String name;
     private String email;
     private String password;
     private String mobileNo;
+    @Column(nullable = false)
     private String companyName;
+    @Column(nullable = false)
     private String gstinNo;
     private String address;
     private String status;
@@ -37,5 +40,7 @@ public class Dealer {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+    @Column(nullable = false)
+    private Long id;
 
 }

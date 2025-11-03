@@ -56,8 +56,10 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     public ProductDTO getProductById(Long id){
+        //fetch product by id from db
       Product product=productRepository.findById(id)
               .orElseThrow(()-> new ResourceNotFoundException("Product not found."));
+      //return product
               return ProductMapper.toDTO(product);
     }
     @Override
@@ -81,8 +83,10 @@ public class ProductServiceImpl implements ProductService {
     }
     @Override
     public ProductDTO updateProduct(Long id,ProductDTO productDTO){
+        //find product from db by id
         Product exitingProduct=productRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
+        //update only these products
         exitingProduct.setName(productDTO.getName());
         exitingProduct.setDescription(productDTO.getDescription());
         exitingProduct.setPrice(productDTO.getPrice());

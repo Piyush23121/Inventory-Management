@@ -20,15 +20,20 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String category;
+    @Column(nullable = false)
     private String brand;
 
-    @Column(length = 1000)//allow longer text
+    @Column(nullable = false, length = 1000)//allow longer text
     private String description;
+    @Column(nullable = false)
     private Double price;
+    @Column(nullable = false)
     private int quantity;
+    @Column(nullable = false)
     private int minStockLevel;
 
     @CreationTimestamp

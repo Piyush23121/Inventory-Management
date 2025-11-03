@@ -18,7 +18,8 @@ import java.time.LocalDateTime;
 public class Admin {
 
     @Id
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long AId;
 
     private String name;
     private String email;
@@ -35,5 +36,8 @@ public class Admin {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
+
+    @Column(nullable = false)
+    private Long id;
 
 }
