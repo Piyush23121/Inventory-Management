@@ -42,6 +42,7 @@ public class Dealer {
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(insertable = false)
     private LocalDateTime updatedAt;
 
 
