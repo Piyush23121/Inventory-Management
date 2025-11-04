@@ -125,9 +125,9 @@ public class UserServiceImpl implements UserService {
 
             //del spe role from child table first
             switch (targetedUser.getRole()) {
-                case ADMIN -> adminRepository.deleteById(id);
-                case DEALER -> dealerRepository.deleteById(id);
-                case CUSTOMER -> customerRepository.deleteById(id);
+                case ADMIN -> adminRepository.deleteByUserId(id);
+                case DEALER -> dealerRepository.deleteByUserId(id);
+                case CUSTOMER -> customerRepository.deleteByUserId(id);
             }//Del user record
             userRepository.deleteById(id);
 
