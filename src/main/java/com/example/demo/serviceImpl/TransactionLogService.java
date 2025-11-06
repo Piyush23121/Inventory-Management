@@ -1,4 +1,4 @@
-package com.example.demo.service;
+package com.example.demo.serviceImpl;
 
 import com.example.demo.entity.TransactionLog;
 import com.example.demo.repository.TransactionLogRepository;

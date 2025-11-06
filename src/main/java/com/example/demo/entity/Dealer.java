@@ -28,10 +28,7 @@ public class Dealer {
     private String password;
     private String mobileNo;
 
-    @Column(nullable = false)
     private String companyName;
-
-    @Column(nullable = false)
     private String gstinNo;
 
     private String address;
