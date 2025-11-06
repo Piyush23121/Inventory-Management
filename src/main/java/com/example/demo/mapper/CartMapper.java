@@ -41,9 +41,10 @@ public class CartMapper {
     //cartItem to dto
     public static CartItemDTO toCartItemDTO(CartItem item){
         CartItemDTO dto=new CartItemDTO();
-        dto.setProductId(item.getProduct().getId());
+        dto.setProduct(item.getProduct());
         dto.setQuantity(item.getQuantity());
         dto.setSubTotal(item.getSubTotal());
+
         return dto;
     }
 

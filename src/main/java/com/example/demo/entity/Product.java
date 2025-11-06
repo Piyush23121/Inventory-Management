@@ -37,10 +37,11 @@ public class Product {
     private int minStockLevel;
 
     @CreationTimestamp
-    @Column(nullable = false)
+    @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
+    @Column(insertable = false)
     private LocalDateTime updatedAt;
 
     private Long dealerId;

@@ -20,7 +20,7 @@ public class CartController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @PostMapping("/addToCart/{customerId}")
     public ResponseEntity<ResponseDto> addToCart(
-            @RequestParam Long customerId,
+            @RequestParam String customerId,
             @RequestParam Long productId,
             @RequestParam int quantity) {
         cartService.addToCart(customerId, productId, quantity);
@@ -31,7 +31,7 @@ public class CartController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @PatchMapping("/updateQuantity/{customerId}/items/{productId}")
     public ResponseEntity<BaseResponseDTO<CartDTO>> updateCart(
-            @RequestParam Long customerId,
+            @RequestParam String customerId,
             @RequestParam Long productId,
             @RequestParam int newQuantity) {
         CartDTO updatedCart = cartService.updateCartItemQuantity(customerId, productId, newQuantity);
@@ -41,7 +41,7 @@ public class CartController {
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @DeleteMapping("/remove/{customerId}/items/{productId}")
     public ResponseEntity<ResponseDto> removeFromCart(
-            @RequestParam Long customerId,
+            @RequestParam String customerId,
             @RequestParam Long productId) {
         cartService.removeFromCart(customerId, productId);
         ResponseDto response = new ResponseDto("Success", "Product removed from cart successfully");
@@ -50,14 +50,14 @@ public class CartController {
     //  Get cart for a customer
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @GetMapping("/getCart/{customerId}")
-    public ResponseEntity<BaseResponseDTO<CartDTO>> getCart(@RequestParam Long customerId) {
+    public ResponseEntity<BaseResponseDTO<CartDTO>> getCart(@RequestParam String customerId) {
         CartDTO cart = cartService.getCart(customerId);
         return ResponseEntity.ok(new BaseResponseDTO<>("Success", "Cart fetched successfully", cart));
     }
     //  Clear entire cart
     @PreAuthorize("hasAuthority('CUSTOMER')")
     @DeleteMapping("/{customerId}")
-    public ResponseEntity<ResponseDto> deleteCart(@RequestParam Long customerId) {
+    public ResponseEntity<ResponseDto> deleteCart(@RequestParam String customerId) {
         cartService.deleteCart(customerId);
         ResponseDto response = new ResponseDto("Success", "Cart cleared successfully");
         return ResponseEntity.status(HttpStatus.OK).body(response);

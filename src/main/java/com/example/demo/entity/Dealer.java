@@ -43,4 +43,5 @@ public class Dealer {
     private LocalDateTime updatedAt;
 
 
+
 }

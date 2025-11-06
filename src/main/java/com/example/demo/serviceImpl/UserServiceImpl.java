@@ -8,10 +8,7 @@ import com.example.demo.exception.AccessDeniedException;
 import com.example.demo.exception.AuthenticationFailureException;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.UserMapper;
-import com.example.demo.repository.AdminRepository;
-import com.example.demo.repository.CustomerRepository;
-import com.example.demo.repository.DealerRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
 import com.example.demo.security.Jwt;
 import com.example.demo.service.UserService;
 import jakarta.transaction.Transactional;
@@ -38,6 +35,8 @@ public class UserServiceImpl implements UserService {
     private Jwt jwt;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private ProductRepository productRepository;
 
     @Override
     @Transactional
@@ -126,7 +125,10 @@ public class UserServiceImpl implements UserService {
             //del spe role from child table first
             switch (targetedUser.getRole()) {
                 case ADMIN -> adminRepository.deleteByUserId(id);
-                case DEALER -> dealerRepository.deleteByUserId(id);
+                case DEALER ->{
+                    productRepository.deleteProductsByDealerId(id);
+                    dealerRepository.deleteByUserId(id);
+                }
                 case CUSTOMER -> customerRepository.deleteByUserId(id);
             }//Del user record
             userRepository.deleteById(id);

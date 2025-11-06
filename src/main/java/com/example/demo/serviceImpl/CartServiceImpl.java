@@ -33,7 +33,7 @@ public class CartServiceImpl implements CartService {
     private CartItemRepository cartItemRepository;
 
     @Override
-    public CartDTO addToCart(Long customerId, Long productId, int quantity){
+    public CartDTO addToCart(String customerId, Long productId, int quantity){
         //Fetch customer
         Customer customer=customerRepository.findById(customerId)
                 .orElseThrow(()-> new ResourceNotFoundException("Customer not found"));
@@ -65,6 +65,7 @@ public class CartServiceImpl implements CartService {
             newItem.setQuantity(quantity);
             newItem.setSubTotal(product.getPrice()*quantity);
             cart.getItems().add(newItem);
+
         }
         //REcalculate total amt and total quantity
         double totalAmount=cart.getItems().stream()
@@ -82,7 +83,7 @@ public class CartServiceImpl implements CartService {
             return CartMapper.toDTO(savedCart);
     }
     @Override
-    public CartDTO removeFromCart(Long customerId,Long productId){
+    public CartDTO removeFromCart(String customerId,Long productId){
         Customer customer=customerRepository.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
 
@@ -105,7 +106,7 @@ public class CartServiceImpl implements CartService {
                 return CartMapper.toDTO(updatedCart);
     }
     @Override
-    public CartDTO getCart(Long customerId){
+    public CartDTO getCart(String customerId){
         Customer customer=customerRepository.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
 
@@ -114,7 +115,7 @@ public class CartServiceImpl implements CartService {
         return CartMapper.toDTO(cart);
     }
     @Override
-    public void deleteCart(Long customerId){
+    public void deleteCart(String customerId){
         Customer customer=customerRepository.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
 
@@ -124,7 +125,7 @@ public class CartServiceImpl implements CartService {
 
     }
     @Override
-    public  CartDTO updateCartItemQuantity(Long customerId,Long productId,int newQuantity){
+    public  CartDTO updateCartItemQuantity(String customerId,Long productId,int newQuantity){
         Customer customer=customerRepository.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
 

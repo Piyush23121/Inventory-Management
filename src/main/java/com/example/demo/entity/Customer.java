@@ -39,5 +39,10 @@ public class Customer {
         @Column(insertable = false)
         private LocalDateTime updatedAt;
 
+        @OneToOne(mappedBy = "customer",cascade = CascadeType.ALL,orphanRemoval = true)
+        private Cart cart;
+
+
+
 
     }

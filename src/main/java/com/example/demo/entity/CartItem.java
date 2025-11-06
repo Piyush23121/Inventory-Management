@@ -36,4 +36,6 @@ public class CartItem {
     @Column(nullable = false)
 
     private double subTotal;
+
+
 }
