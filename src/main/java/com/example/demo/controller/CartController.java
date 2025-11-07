@@ -18,7 +18,7 @@ public class CartController {
     private CartService cartService;
     //  Add product to cart
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    @PostMapping("/addToCart/{customerId}")
+    @PostMapping("/addToCart")
     public ResponseEntity<ResponseDto> addToCart(
             @RequestParam String customerId,
             @RequestParam Long productId,
@@ -29,7 +29,7 @@ public class CartController {
     }
     //  Update product quantity in cart
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    @PatchMapping("/updateQuantity/{customerId}/items/{productId}")
+    @PatchMapping("/updateQuantity")
     public ResponseEntity<BaseResponseDTO<CartDTO>> updateCart(
             @RequestParam String customerId,
             @RequestParam Long productId,
@@ -39,7 +39,7 @@ public class CartController {
     }
     // Remove a specific product from cart
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    @DeleteMapping("/remove/{customerId}/items/{productId}")
+    @DeleteMapping("/removeFromCart")
     public ResponseEntity<ResponseDto> removeFromCart(
             @RequestParam String customerId,
             @RequestParam Long productId) {
@@ -49,14 +49,14 @@ public class CartController {
     }
     //  Get cart for a customer
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    @GetMapping("/getCart/{customerId}")
+    @GetMapping("/getCart")
     public ResponseEntity<BaseResponseDTO<CartDTO>> getCart(@RequestParam String customerId) {
         CartDTO cart = cartService.getCart(customerId);
         return ResponseEntity.ok(new BaseResponseDTO<>("Success", "Cart fetched successfully", cart));
     }
     //  Clear entire cart
     @PreAuthorize("hasAuthority('CUSTOMER')")
-    @DeleteMapping("/{customerId}")
+    @DeleteMapping("/deleteCart")
     public ResponseEntity<ResponseDto> deleteCart(@RequestParam String customerId) {
         cartService.deleteCart(customerId);
         ResponseDto response = new ResponseDto("Success", "Cart cleared successfully");
