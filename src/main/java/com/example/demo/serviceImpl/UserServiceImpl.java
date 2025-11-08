@@ -7,9 +7,11 @@ import com.example.demo.entity.*;
 import com.example.demo.exception.AccessDeniedException;
 import com.example.demo.exception.AuthenticationFailureException;
 import com.example.demo.exception.ResourceNotFoundException;
+import com.example.demo.exception.UnverifiedEmail;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.repository.*;
 import com.example.demo.security.Jwt;
+import com.example.demo.service.EmailService;
 import com.example.demo.service.UserService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Random;
 
 @Service
 @Transactional
@@ -37,6 +40,10 @@ public class UserServiceImpl implements UserService {
     private PasswordEncoder passwordEncoder;
     @Autowired
     private ProductRepository productRepository;
+    @Autowired
+    private OtpRepository otpRepository;
+    @Autowired
+    private EmailService emailService;
 
     @Override
     @Transactional
@@ -86,7 +93,36 @@ public class UserServiceImpl implements UserService {
                 }
             }
         }//returndto back
+        int otp=createOtp();
+        Otp otpUser = new Otp();
+        otpUser.setEmail(userDTO.getEmail());
+        otpUser.setOtp(otp);
+        otpRepository.save(otpUser);
+
+        emailService.sendEmail(userDTO.getEmail(),"OTP Verification",otp+"Verify Using This Otp and Do not Share It With Anyone");
         return UserMapper.toDTO(user);
+    }
+    @Override
+    public void verifyOtp(int userOtp,String email){
+        User user=userRepository.findByEmail(email).get();
+        if (user==null){
+            throw new AuthenticationFailureException("Email Not Registered");
+        }
+     if (user.isStatus()){
+         throw new AccessDeniedException("Email Already Registered");
+     }
+
+
+            Otp byEmail=otpRepository.findByEmail(email);
+            if (userOtp==byEmail.getOtp()){
+                user.setStatus(true);
+                userRepository.save(user);
+                otpRepository.delete(byEmail);
+            }
+            else  {
+                throw new AccessDeniedException("Please Enter Valid Otp");
+            }
+
     }
 
     @Override
@@ -101,6 +137,8 @@ public class UserServiceImpl implements UserService {
 //Check provided pass matches stored one and use encoder
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword()))
             throw new AuthenticationFailureException("Invalid email or password");
+        if(!user.isStatus())
+            throw new UnverifiedEmail("plz verify otp");
 // Generate jwt token using users email and password
         String token = jwt.generateToken(user.getEmail(), user.getRole().name());
         return new JwtResponse(token, user.getRole().name());//return jwt response containing token and role
@@ -159,7 +197,6 @@ public class UserServiceImpl implements UserService {
             if (userDTO.getName() != null) targetedUser.setName(userDTO.getName());
             if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
             if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
-            if (userDTO.getStatus() != null) targetedUser.setStatus(userDTO.getStatus());
             if (userDTO.getAddress() != null) targetedUser.setAddress(userDTO.getAddress());
 
             if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
@@ -195,4 +232,10 @@ public class UserServiceImpl implements UserService {
             }//return updated user dto
             return UserMapper.toDTO(updatedUser);
         }
+    private int createOtp() {
+        Random random = new Random();
+        int otp = 100000+random.nextInt(900000);
+        return otp;
     }
+    }
+

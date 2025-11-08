@@ -33,7 +33,7 @@ public class SecurityConfig {
 
                         //alloewd every one to access
                         .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html",
-                                "/api/register","/api/login","/api/deleteUser/{id}").permitAll()
+                                "/api/register","/api/login","/api/verifyWithOtp","/api/deleteUser/{id}").permitAll()
                         .requestMatchers("/auth/**").permitAll()//login register api
 
                         //any other end pt req valid jwt token

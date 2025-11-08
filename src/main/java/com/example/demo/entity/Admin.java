@@ -28,7 +28,7 @@ public class Admin {
     private String password;
     private String mobileNo;
     private String address;
-    private String status;
+    
 
     @CreationTimestamp
     @Column(updatable = false)

@@ -33,5 +33,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<BaseResponseDTO<Object>> handleImageUpload(ImageUploadException ex){
         return new ResponseEntity<>(new BaseResponseDTO<>("error , Failed to upload failed",ex.getMessage(),null),HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(UnverifiedEmail.class)
+    public ResponseEntity<BaseResponseDTO<Object>> handleUnverifiedEmail(UnverifiedEmail ex){
+        return new ResponseEntity<>(new BaseResponseDTO<>("error, Please Verify Your Email",ex.getMessage(),null),HttpStatus.BAD_REQUEST);
+    }
 
 }

@@ -43,8 +43,7 @@ public class UserDTO {
     @NotNull(message = "Role is required")
     private RoleType role;
 
-    @NotBlank(message = "Status is required (ACTIVE / INACTIVE)")
-    private String status;
+
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private LocalDateTime createdAt;

@@ -19,7 +19,7 @@ public class    UserController {
     @PostMapping("/register")
     public ResponseEntity<ResponseDto> registerUser(@Valid @RequestBody UserDTO userDTO){ //take data from req body and covert it into user dto obj
         userService.registerUser(userDTO); //calls the service method to register user
-         ResponseDto responseDto=new ResponseDto("Success","User Registered Successfully");
+         ResponseDto responseDto=new ResponseDto("Success","Otp Sent Successfully");
          return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);//rturn 200 ok resp with saved user details
     }
     @PostMapping("/login")
@@ -41,6 +41,12 @@ public class    UserController {
         ResponseDto responseDto=new ResponseDto("Success","User updated successfully");
         return ResponseEntity.ok(responseDto);
 
+        }
+        @PostMapping("/verifyWithOtp")
+        public ResponseEntity<ResponseDto> verifyOtp(@RequestParam int otp,@RequestParam String email){
+        userService.verifyOtp(otp,email);
+        ResponseDto responseDto=new ResponseDto("Success","Otp verified successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         }
 
 

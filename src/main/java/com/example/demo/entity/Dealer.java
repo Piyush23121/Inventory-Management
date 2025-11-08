@@ -32,7 +32,7 @@ public class Dealer {
     private String gstinNo;
 
     private String address;
-    private String status;
+
 
     @CreationTimestamp
     @Column(updatable = false)

@@ -44,7 +44,7 @@ public class User {
         private String address;
 
         @Column(nullable = false)
-        private String status;
+        private boolean status;
 
         @CreationTimestamp
         @Column(updatable = false)

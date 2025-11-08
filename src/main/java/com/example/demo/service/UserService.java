@@ -10,4 +10,6 @@ public interface UserService {
     JwtResponse loginUser(LoginRequest loginRequest);
     void deleteUser(Long id, Authentication authentication);
     UserDTO updateUser(Long id, UserDTO userDTO, Authentication authentication);
+    void verifyOtp(int userOtp,String email);
+
 }
