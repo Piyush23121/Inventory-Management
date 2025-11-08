@@ -1,9 +1,6 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -11,6 +8,7 @@ import lombok.*;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "images")
 public class ImageFile {
 
     @Id
@@ -20,5 +18,9 @@ public class ImageFile {
     private  String name;
     private  String filePath;
     private  String type;
+
+    @ManyToOne
+    @JoinColumn(name = "producctId")
+    private Product product;
 
 }

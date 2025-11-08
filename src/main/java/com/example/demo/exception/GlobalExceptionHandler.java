@@ -29,5 +29,9 @@ public class GlobalExceptionHandler {
     public ResponseEntity<BaseResponseDTO<Object>> handleGeneralException(Exception ex){
         return new ResponseEntity<>(new BaseResponseDTO<>("Error, Something went wrong:", ex.getMessage(), null),HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(ImageUploadException.class)
+    public ResponseEntity<BaseResponseDTO<Object>> handleImageUpload(ImageUploadException ex){
+        return new ResponseEntity<>(new BaseResponseDTO<>("error , Failed to upload failed",ex.getMessage(),null),HttpStatus.BAD_REQUEST);
+    }
 
 }
