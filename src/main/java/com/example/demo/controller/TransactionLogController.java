@@ -13,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/transactions")
+@RequestMapping("/api")
 public class TransactionLogController {
 
     @Autowired
     private TransactionLogRepository transactionLogRepository;
 
     @PreAuthorize(("hasAuthority('ADMIN')"))
-    @GetMapping
+    @GetMapping("transactions")
     public ResponseEntity<BaseResponseDTO<List<TransactionLog>>> getAllLogs(){
         List<TransactionLog> logs= transactionLogRepository.findAll();
         return ResponseEntity.ok(new BaseResponseDTO<>("Success", "Transaction logs fetch successfully" , logs));

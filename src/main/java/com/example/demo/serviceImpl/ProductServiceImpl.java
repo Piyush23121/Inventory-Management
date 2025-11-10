@@ -85,11 +85,11 @@ public class ProductServiceImpl implements ProductService {
         //find product from db by id
         Product exitingProduct=productRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
-        //update only these products
-        exitingProduct.setName(productDTO.getName());
-        exitingProduct.setDescription(productDTO.getDescription());
-        exitingProduct.setPrice(productDTO.getPrice());
-        exitingProduct.setCategory(productDTO.getCategory());
+        if(productDTO.getDescription()!=null)
+            exitingProduct.setDescription(productDTO.getDescription());
+        if(productDTO.getPrice()!=null)
+            exitingProduct.setPrice(productDTO.getPrice());
+
 
         Product savedProduct = productRepository.save(exitingProduct);
         return ProductMapper.toDTO(savedProduct);

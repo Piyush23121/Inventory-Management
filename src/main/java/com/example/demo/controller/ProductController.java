@@ -33,13 +33,13 @@ public class ProductController {
 
     // All Roles - View Products
     @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
-    @GetMapping("/getProduct/{id}")
-    public ResponseEntity<BaseResponseDTO<ProductDTO>> getProductById (@PathVariable Long id){
+    @GetMapping("/getProduct")
+    public ResponseEntity<BaseResponseDTO<ProductDTO>> getProductById (@RequestParam Long id){
        ProductDTO product=productService.getProductById(id);
        return ResponseEntity.ok(new BaseResponseDTO<>("Success","Product fetched Successfully",product));
     }
 
-
+    @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
     @GetMapping("/getAllProducts")
     public ResponseEntity<BaseResponseDTO<Page<ProductDTO>>> getAllProducts(
             @RequestParam(required = false) String category,
@@ -52,23 +52,23 @@ public class ProductController {
     }
 
     @PreAuthorize("hasAnyAuthority('DEALER')")
-    @PatchMapping("/updateProduct/{id}")
-    public ResponseEntity<BaseResponseDTO<ProductDTO>> updateProduct(@PathVariable Long id, @RequestBody ProductDTO productDTO){
+    @PatchMapping("/updateProduct")
+    public ResponseEntity<BaseResponseDTO<ProductDTO>> updateProduct(@RequestParam Long id, @RequestBody ProductDTO productDTO){
         ProductDTO updated=productService.updateProduct(id, productDTO);
         return ResponseEntity.ok(new BaseResponseDTO<>("Success", "Product Updated Successfully", updated));
     }
 
     @PreAuthorize("hasAnyAuthority('DEALER')")
-    @DeleteMapping("/deleteProduct/{id}")
-    public ResponseEntity<ResponseDto> deleteProduct(@PathVariable Long id){
+    @DeleteMapping("/deleteProduct")
+    public ResponseEntity<ResponseDto> deleteProduct(@RequestParam Long id){
         productService.deleteProduct(id);
          ResponseDto responseDto=new ResponseDto("Success","Product Deleted Successfully");
          return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
     }
 
     @PreAuthorize("hasAuthority('DEALER')")
-    @PatchMapping("/updateStock/{id}")
-    public ResponseEntity<BaseResponseDTO<ProductDTO>> updateStock(@PathVariable Long id, @RequestBody int quantityChange){
+    @PatchMapping("/updateStock")
+    public ResponseEntity<BaseResponseDTO<ProductDTO>> updateStock(@RequestParam Long id, @RequestParam int quantityChange){
         ProductDTO updated= productService.updateStock(id,quantityChange);
         return ResponseEntity.ok(new BaseResponseDTO<>("Success","Product Updated Successfully",updated));
     }
