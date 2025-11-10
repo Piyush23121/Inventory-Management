@@ -29,14 +29,14 @@ public class    UserController {
 
         }
         @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
-        @DeleteMapping("/deleteUser/{id}")
-        public ResponseEntity<ResponseDto> deleteUser(@PathVariable Long id, Authentication authentication){
+        @DeleteMapping("/deleteUser")
+        public ResponseEntity<ResponseDto> deleteUser(@RequestParam Long id, Authentication authentication){
         userService.deleteUser(id,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User Deleted Successfully");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
         }
-        @PatchMapping("/updateUser/{id}")
-        public ResponseEntity<ResponseDto> updateUser(@Valid @PathVariable Long id, @RequestBody UserDTO userDTO,Authentication authentication){
+        @PatchMapping("/updateUser")
+        public ResponseEntity<ResponseDto> updateUser(@Valid @RequestParam Long id, @RequestBody UserDTO userDTO,Authentication authentication){
         userService.updateUser(id,userDTO,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User updated successfully");
         return ResponseEntity.ok(responseDto);

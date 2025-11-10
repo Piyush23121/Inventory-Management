@@ -27,14 +27,18 @@ public class UserDTO {
 
     @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format ")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$",
+             message="Please Enter Valid Email format, e.g ayush123@gmail.com")
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$")
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&]).{8,}$",
+            message="Please Enter Valid Password format, e.g Ayush@123")
     private String password;
 
     @NotBlank(message = "Mobile number is required")
-    @Pattern(regexp = "^[6-9][0-9]{9}$")
+    @Pattern(regexp = "^[6-9][0-9]{9}$",
+             message="Please Enter Valid Mobile No format, e.g 7665671265")
     private String mobileNo;
 
     @NotBlank(message = "Address is required")

@@ -71,6 +71,11 @@ public class UserServiceImpl implements UserService {
 
             switch (role) {
                 case ADMIN -> {
+                    if (userDTO.getCompanyName() != null)
+                        throw new AccessDeniedException("Company Name is Available for dealers only");
+                    if (userDTO.getGstinNo() != null)
+                        throw new AccessDeniedException("GSTIN Number is Available for dealers only");
+
                     long adminCount = adminRepository.count();
                     Admin admin = UserMapper.toAdmin(user);
                     admin.setAid("A" + (adminCount + 1));
@@ -82,9 +87,21 @@ public class UserServiceImpl implements UserService {
                     Dealer dealer = UserMapper.toDealer(user, userDTO);
                     dealer.setDId("D" + (dealerCount + 1));
                     dealer.setUserId(user.getId());
+                    if (userDTO.getCompanyName()==null||userDTO.getCompanyName().isBlank())
+                        throw  new AccessDeniedException("Company name is required");
+                    if (userDTO.getGstinNo()==null||userDTO.getGstinNo().isBlank())
+                        throw  new AccessDeniedException("GSTIN NO is required");
+
+
                     dealerRepository.save(dealer);
+
                 }
                 case CUSTOMER -> {
+                    if (userDTO.getCompanyName() != null)
+                        throw new AccessDeniedException("Company Name is Available for dealers only");
+                    if (userDTO.getGstinNo() != null)
+                        throw new AccessDeniedException("GSTIN Number is Available for dealers only");
+
                     long customerCount = customerRepository.count();
                     Customer customer = UserMapper.toCustomer(user);
                     customer.setCId("C" + (customerCount + 1));
