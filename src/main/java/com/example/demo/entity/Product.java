@@ -48,7 +48,7 @@ public class Product {
 
     private Long dealerId;
 
-    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    private List<ImageFile> images=new ArrayList<>();
+    @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+    private List<ImageFile> images;
 }
 

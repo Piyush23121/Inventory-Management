@@ -3,6 +3,7 @@ package com.example.demo.serviceImpl;
 import com.example.demo.entity.Dealer;
 import com.example.demo.entity.ImageFile;
 import com.example.demo.entity.Product;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.DealerRepository;
 import com.example.demo.repository.ImageRepository;
 import com.example.demo.repository.ProductRepository;
@@ -35,7 +36,8 @@ public class ImageServiceImpl implements ImageService {
         String email=authentication.getName();
         Dealer dealer=dealerRepository.findByEmail(email).get();
         String dealerId= dealer.getDId();
-        Product product=productRepository.findById(productId).get();
+        Product product=productRepository.findById(productId)
+                .orElseThrow(()->new ResourceNotFoundException("Product not found"));
 
         for (MultipartFile file:files){
             String fileName = file.getOriginalFilename();
@@ -55,6 +57,7 @@ public class ImageServiceImpl implements ImageService {
             imageFile.setFilePath(finalPath);
             imageFile.setType(file.getContentType());
             ImageFile savedImage=imageRepository.save(imageFile);
+            images.add(savedImage);
         }
         product.setImages(images);
         productRepository.save(product);

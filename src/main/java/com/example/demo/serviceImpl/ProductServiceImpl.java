@@ -34,6 +34,7 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     private DealerRepository dealerRepository;
 
+
     @Override
     public ProductDTO addProduct(ProductDTO productDTO){
         //Covert dto to entity before saving

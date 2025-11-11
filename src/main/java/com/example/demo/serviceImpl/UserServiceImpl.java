@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 
@@ -44,6 +45,8 @@ public class UserServiceImpl implements UserService {
     private OtpRepository otpRepository;
     @Autowired
     private EmailService emailService;
+    @Autowired
+    private CartItemRepository cartItemRepository;
 
     @Override
     @Transactional
@@ -181,6 +184,10 @@ public class UserServiceImpl implements UserService {
             switch (targetedUser.getRole()) {
                 case ADMIN -> adminRepository.deleteByUserId(id);
                 case DEALER ->{
+                    List<Product> products=productRepository.findByDealerId(id);
+                    for (Product product : products) {
+                        cartItemRepository.deleteByProductId(product.getId());
+                    }
                     productRepository.deleteProductsByDealerId(id);
                     dealerRepository.deleteByUserId(id);
                 }
