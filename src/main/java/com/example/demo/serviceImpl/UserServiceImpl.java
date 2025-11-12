@@ -1,3 +1,4 @@
+
 package com.example.demo.serviceImpl;
 
 import com.example.demo.dto.JwtResponse;
@@ -59,7 +60,7 @@ public class UserServiceImpl implements UserService {
         }
         //Encode Pass before saving
         String encodedPass = passwordEncoder.encode(userDTO.getPassword());
-         //if role not provied the assign custumer
+        //if role not provied the assign custumer
         RoleType role = (userDTO.getRole() != null) ? userDTO.getRole() : RoleType.CUSTOMER;
 
         // convert dto to user entity and assign encoded  pass and role
@@ -128,20 +129,20 @@ public class UserServiceImpl implements UserService {
         if (user==null){
             throw new AuthenticationFailureException("Email Not Registered");
         }
-     if (user.isStatus()){
-         throw new AccessDeniedException("Email Already Registered");
-     }
+        if (user.isStatus()){
+            throw new AccessDeniedException("Email Already Registered");
+        }
 
 
-            Otp byEmail=otpRepository.findByEmail(email);
-            if (userOtp==byEmail.getOtp()){
-                user.setStatus(true);
-                userRepository.save(user);
-                otpRepository.delete(byEmail);
-            }
-            else  {
-                throw new AccessDeniedException("Please Enter Valid Otp");
-            }
+        Otp byEmail=otpRepository.findByEmail(email);
+        if (userOtp==byEmail.getOtp()){
+            user.setStatus(true);
+            userRepository.save(user);
+            otpRepository.delete(byEmail);
+        }
+        else  {
+            throw new AccessDeniedException("Please Enter Valid Otp");
+        }
 
     }
 
@@ -218,48 +219,47 @@ public class UserServiceImpl implements UserService {
             throw new AccessDeniedException("Plz update your own account");
         }
 //only update these fields
-            if (userDTO.getName() != null) targetedUser.setName(userDTO.getName());
-            if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
-            if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
-            if (userDTO.getAddress() != null) targetedUser.setAddress(userDTO.getAddress());
+        if (userDTO.getName() != null) targetedUser.setName(userDTO.getName());
+        if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
+        if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
+        if (userDTO.getAddress() != null) targetedUser.setAddress(userDTO.getAddress());
 
-            if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-                targetedUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
-
-
-            }
-            //save and return updated user
-            User updatedUser = userRepository.save(targetedUser);
+        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
+            targetedUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
 
 
-            //update same rcord in role table
-            switch (updatedUser.getRole()) {
-                case ADMIN -> {
-                    Admin admin = adminRepository.findByUserId(updatedUser.getId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Admin record missing"));
-                    admin = UserMapper.toAdmin(updatedUser, admin);
-                    adminRepository.save(admin);
-                }
-                case DEALER -> {
-                    Dealer dealer = dealerRepository.findByUserId(updatedUser.getId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Dealer record missing"));
-                    dealer = UserMapper.toDealer(updatedUser, userDTO, dealer);
-                    dealerRepository.save(dealer);
-                }
-                case CUSTOMER -> {
-                    Customer customer = customerRepository.findByUserId(updatedUser.getId())
-                            .orElseThrow(() -> new ResourceNotFoundException("Customer is missing"));
-                    customer = UserMapper.toCustomer(updatedUser, customer);
-                    customerRepository.save(customer);
-                }
-
-            }//return updated user dto
-            return UserMapper.toDTO(updatedUser);
         }
+        //save and return updated user
+        User updatedUser = userRepository.save(targetedUser);
+
+
+        //update same rcord in role table
+        switch (updatedUser.getRole()) {
+            case ADMIN -> {
+                Admin admin = adminRepository.findByUserId(updatedUser.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Admin record missing"));
+                admin = UserMapper.toAdmin(updatedUser, admin);
+                adminRepository.save(admin);
+            }
+            case DEALER -> {
+                Dealer dealer = dealerRepository.findByUserId(updatedUser.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Dealer record missing"));
+                dealer = UserMapper.toDealer(updatedUser, userDTO, dealer);
+                dealerRepository.save(dealer);
+            }
+            case CUSTOMER -> {
+                Customer customer = customerRepository.findByUserId(updatedUser.getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Customer is missing"));
+                customer = UserMapper.toCustomer(updatedUser, customer);
+                customerRepository.save(customer);
+            }
+
+        }//return updated user dto
+        return UserMapper.toDTO(updatedUser);
+    }
     private int createOtp() {
         Random random = new Random();
         int otp = 100000+random.nextInt(900000);
         return otp;
     }
-    }
-
+}
