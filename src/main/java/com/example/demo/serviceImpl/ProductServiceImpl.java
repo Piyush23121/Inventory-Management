@@ -2,14 +2,15 @@ package com.example.demo.serviceImpl;
 
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.Dealer;
+import com.example.demo.entity.ImageFile;
 import com.example.demo.entity.Product;
 import com.example.demo.entity.User;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.ProductMapper;
-import com.example.demo.repository.DealerRepository;
-import com.example.demo.repository.ProductRepository;
-import com.example.demo.repository.UserRepository;
+import com.example.demo.repository.*;
+import com.example.demo.service.ImageService;
 import com.example.demo.service.ProductService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -19,6 +20,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -33,6 +38,14 @@ public class ProductServiceImpl implements ProductService {
     private TransactionLogService transactionLogService;
     @Autowired
     private DealerRepository dealerRepository;
+    @Autowired
+    private ImageRepository imageRepository;
+    @Autowired
+    private ImageService imageService;
+    @Autowired
+    private CartRepository cartRepository;
+    @Autowired
+    private CartItemRepository cartItemRepository;
 
 
     @Override
@@ -59,8 +72,13 @@ public class ProductServiceImpl implements ProductService {
         //fetch product by id from db
       Product product=productRepository.findById(id)
               .orElseThrow(()-> new ResourceNotFoundException("Product not found."));
+
+      List<String> imageUrls=getImages(product);
+      ProductDTO productDTO=ProductMapper.toDTO(product);
+      productDTO.setImages(imageUrls);
+
       //return product
-              return ProductMapper.toDTO(product);
+              return productDTO;
     }
     @Override
     public Page<ProductDTO> getAllProducts(String category,
@@ -95,11 +113,26 @@ public class ProductServiceImpl implements ProductService {
         Product savedProduct = productRepository.save(exitingProduct);
         return ProductMapper.toDTO(savedProduct);
     }
+    @Transactional
     @Override
-    public void deleteProduct(Long id){
-        if(!productRepository.existsById(id)){
-            throw new ResourceNotFoundException("Product not found with id: "+id);
+    public void deleteProduct(Long id,Authentication authentication) throws IOException {
+        String currentUsername = authentication.getName();
+        User currentUser = userRepository.findByEmail(currentUsername)
+                .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
+//find the user that has to be del
+
+        Product product=productRepository.findById(id)
+               .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
+
+        if (!product.getDealerId().equals(currentUser.getId())) {
+            throw new ResourceNotFoundException("You are not allowed to delete this product");
         }
+        List<ImageFile> imageFiles=imageRepository.findByProductId(product.getId());
+        for (ImageFile imageFile : imageFiles) {
+            Files.deleteIfExists(Paths.get(imageFile.getFilePath()));
+        }
+        imageRepository.deleteByProductId(id);
+        cartItemRepository.deleteByProductId(id);
         productRepository.deleteById(id);
     }
     @Override
@@ -142,4 +175,21 @@ public class ProductServiceImpl implements ProductService {
                 .collect(Collectors.toList());
     }
 
+    private List<String> getImages(Product  product){
+        List<String> images=new ArrayList<>();
+        List<ImageFile> imageFiles=product.getImages();
+        if(imageFiles==null || imageFiles.isEmpty()){
+            String image="No images found";
+            images.add(image);
+        }else {
+            for(ImageFile imageFile:imageFiles){
+                String image=imageService.getImage(imageFile);
+                images.add(image);
+            }
+        }
+        return images;
+    }
+
 }
+
+

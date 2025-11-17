@@ -10,9 +10,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springdoc.core.annotations.ParameterObject;
 
+import java.io.IOException;
 import java.util.List;
 
 @RestController
@@ -60,8 +62,8 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('DEALER')")
     @DeleteMapping("/deleteProduct")
-    public ResponseEntity<ResponseDto> deleteProduct(@RequestParam Long id){
-        productService.deleteProduct(id);
+    public ResponseEntity<ResponseDto> deleteProduct(@RequestParam Long id, Authentication authentication)throws IOException {
+        productService.deleteProduct(id, authentication);
          ResponseDto responseDto=new ResponseDto("Success","Product Deleted Successfully");
          return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
     }

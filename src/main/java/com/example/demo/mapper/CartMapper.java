@@ -2,14 +2,18 @@ package com.example.demo.mapper;
 
 import com.example.demo.dto.CartDTO;
 import com.example.demo.dto.CartItemDTO;
+import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.Cart;
 import com.example.demo.entity.CartItem;
 import com.example.demo.entity.Customer;
 import com.example.demo.entity.Product;
+import com.example.demo.service.ProductService;
+import com.example.demo.serviceImpl.ProductServiceImpl;
+import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
 public class CartMapper {
 
     //converrt cart to dto
@@ -19,11 +23,19 @@ public class CartMapper {
         dto.setCustomerId(cart.getCustomer().getUserId());
         dto.setTotalQuantity(cart.getTotalQuantity());
         dto.setTotalAmount(cart.getTotalAmount());
+       List<CartItemDTO>  productDTOS=new ArrayList<>();
+        List<CartItem> items = cart.getItems();
+        for (CartItem item : items) {
+            Product product = item.getProduct();
+            ProductService service=new ProductServiceImpl();
+            ProductDTO productById = service.getProductById(product.getId());
+            CartItemDTO cartItemDTO=new CartItemDTO();
+            cartItemDTO.setProduct(productById);
+            cartItemDTO.setQuantity(item.getQuantity());
+            productDTOS.add(cartItemDTO);
+        }
+        dto.setItems(productDTOS);
 
-        List<CartItemDTO> itemDTOS=cart.getItems().stream()
-                .map(CartMapper::toCartItemDTO)
-                .collect(Collectors.toList());
-        dto.setItems(itemDTOS);
 
         return dto;
     }
@@ -41,7 +53,8 @@ public class CartMapper {
     //cartItem to dto
     public static CartItemDTO toCartItemDTO(CartItem item){
         CartItemDTO dto=new CartItemDTO();
-        dto.setProduct(item.getProduct());
+        Product product = item.getProduct();
+
         dto.setQuantity(item.getQuantity());
         dto.setSubTotal(item.getSubTotal());
 

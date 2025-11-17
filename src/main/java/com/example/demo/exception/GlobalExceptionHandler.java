@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,6 +37,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnverifiedEmail.class)
     public ResponseEntity<BaseResponseDTO<Object>> handleUnverifiedEmail(UnverifiedEmail ex){
         return new ResponseEntity<>(new BaseResponseDTO<>("error, Please Verify Your Email",ex.getMessage(),null),HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<BaseResponseDTO<Object>> handleValidation(MethodArgumentNotValidException ex){
+        String message = ex.getBindingResult().getFieldError().getDefaultMessage();
+        return  new ResponseEntity<>(new BaseResponseDTO<>("error",message,null),HttpStatus.BAD_REQUEST);
     }
 
 }

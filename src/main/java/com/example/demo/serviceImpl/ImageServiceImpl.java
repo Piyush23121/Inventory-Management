@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.File;
 import java.io.IOException;
@@ -62,10 +63,16 @@ public class ImageServiceImpl implements ImageService {
         product.setImages(images);
         productRepository.save(product);
         return images;
-
-
-
-
-
+    }
+    @Override
+    public String getImage(ImageFile imageFile){
+        String dealerId=imageFile.getProduct().getDealerId().toString();
+        String url= ServletUriComponentsBuilder
+                .fromCurrentContextPath()
+                .path("/api/getImage")
+                .queryParam("imageName",imageFile.getName())
+                .queryParam("dealerId",dealerId)
+                .toUriString();
+        return url;
     }
 }

@@ -11,4 +11,5 @@ public interface ImageService {
     List<ImageFile> uploadImage(Long productId, String path, List<MultipartFile> files, Authentication authentication) throws IOException;
 
 
+    String getImage(ImageFile imageFile);
 }

@@ -5,10 +5,7 @@ import com.example.demo.dto.JwtResponse;
 import com.example.demo.dto.LoginRequest;
 import com.example.demo.dto.UserDTO;
 import com.example.demo.entity.*;
-import com.example.demo.exception.AccessDeniedException;
-import com.example.demo.exception.AuthenticationFailureException;
-import com.example.demo.exception.ResourceNotFoundException;
-import com.example.demo.exception.UnverifiedEmail;
+import com.example.demo.exception.*;
 import com.example.demo.mapper.UserMapper;
 import com.example.demo.repository.*;
 import com.example.demo.security.Jwt;
@@ -20,6 +17,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -48,6 +49,10 @@ public class UserServiceImpl implements UserService {
     private EmailService emailService;
     @Autowired
     private CartItemRepository cartItemRepository;
+    @Autowired
+    private ImageRepository imageRepository;
+    @Autowired
+    private CartRepository cartRepository;
 
     @Override
     @Transactional
@@ -124,7 +129,13 @@ public class UserServiceImpl implements UserService {
         return UserMapper.toDTO(user);
     }
     @Override
-    public void verifyOtp(int userOtp,String email){
+    public void verifyOtp(String userOtp,String email){
+
+        String str =String.valueOf(userOtp);
+        if (!str.matches("^[0-9]{6}$")){
+            throw new AccessDeniedException("Otp must be 6 Digits");
+        }
+        int otpValue=Integer.parseInt(userOtp);
         User user=userRepository.findByEmail(email).get();
         if (user==null){
             throw new AuthenticationFailureException("Email Not Registered");
@@ -132,17 +143,18 @@ public class UserServiceImpl implements UserService {
         if (user.isStatus()){
             throw new AccessDeniedException("Email Already Registered");
         }
+        Otp storedOtp=otpRepository.findByEmail(email);
+        if (storedOtp.getOtp()!=otpValue){
+            throw new InvalidInputException("Invalid Otp , Please Enter correct otp");
+        }
 
 
-        Otp byEmail=otpRepository.findByEmail(email);
-        if (userOtp==byEmail.getOtp()){
+
+
             user.setStatus(true);
             userRepository.save(user);
-            otpRepository.delete(byEmail);
-        }
-        else  {
-            throw new AccessDeniedException("Please Enter Valid Otp");
-        }
+            otpRepository.delete(storedOtp);
+
 
     }
 
@@ -167,7 +179,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public void deleteUser(Long id, Authentication authentication) {
+    public void deleteUser(Long id, Authentication authentication) throws IOException{
         //Idetify current login user
         String currentUsername = authentication.getName();
         User currentUser = userRepository.findByEmail(currentUsername)
@@ -185,12 +197,20 @@ public class UserServiceImpl implements UserService {
             switch (targetedUser.getRole()) {
                 case ADMIN -> adminRepository.deleteByUserId(id);
                 case DEALER ->{
+
                     List<Product> products=productRepository.findByDealerId(id);
                     for (Product product : products) {
+                        List<ImageFile> imageFiles=imageRepository.findByProductId(product.getId());
+                        for (ImageFile imageFile : imageFiles) {
+                            Files.deleteIfExists(Paths.get(imageFile.getFilePath()));
+                        }
+                            imageRepository.deleteByProductId(product.getId());
                         cartItemRepository.deleteByProductId(product.getId());
+
                     }
                     productRepository.deleteProductsByDealerId(id);
                     dealerRepository.deleteByUserId(id);
+
                 }
                 case CUSTOMER -> customerRepository.deleteByUserId(id);
             }//Del user record

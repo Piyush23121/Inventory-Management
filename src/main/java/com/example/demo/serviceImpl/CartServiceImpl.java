@@ -16,6 +16,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -112,6 +113,10 @@ public class CartServiceImpl implements CartService {
 
         Cart cart=cartRepository.findByCustomer(customer)
                 .orElseThrow(()->new ResourceNotFoundException("Cart not found"));
+        List<CartItem> items = cart.getItems();
+        if(items.isEmpty()){
+            throw new ResourceNotFoundException("Items not found");
+        }
         return CartMapper.toDTO(cart);
     }
     @Override

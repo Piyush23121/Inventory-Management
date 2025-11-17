@@ -30,7 +30,7 @@ public class    UserController {
         }
         @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
         @DeleteMapping("/deleteUser")
-        public ResponseEntity<ResponseDto> deleteUser(@RequestParam Long id, Authentication authentication){
+        public ResponseEntity<ResponseDto> deleteUser(@RequestParam Long id, Authentication authentication)throws Exception{
         userService.deleteUser(id,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User Deleted Successfully");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
@@ -43,7 +43,7 @@ public class    UserController {
 
         }
         @PostMapping("/verifyWithOtp")
-        public ResponseEntity<ResponseDto> verifyOtp(@RequestParam int otp,@RequestParam String email){
+        public ResponseEntity<ResponseDto> verifyOtp(@RequestParam String  otp,@RequestParam String email){
         userService.verifyOtp(otp,email);
         ResponseDto responseDto=new ResponseDto("Success","Otp verified successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);

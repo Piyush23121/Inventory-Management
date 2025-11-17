@@ -6,6 +6,7 @@ import com.example.demo.entity.Product;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class ProductMapper {
@@ -29,13 +30,15 @@ public class ProductMapper {
             dto.setCreatedAt(product.getCreatedAt());
             dto.setUpdatedAt(product.getUpdatedAt());
 
-            if (product.getImages() != null && product.getImages().isEmpty()) {
-                List<String> imagePath=product.getImages()
-                        .stream()
-                        .map(ImageFile::getFilePath)
-                        .toList();
-                dto.setImages(imagePath);
+            if (product.getImages()!=null) {
+                dto.setImages(
+                        product.getImages()
+                                .stream()
+                                .map(ImageFile::getFilePath)
+                                .collect(Collectors.toList())
+                );
             }
+
 
             return dto;
         }
