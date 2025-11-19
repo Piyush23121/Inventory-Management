@@ -32,8 +32,16 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         //alloewd every one to access
-                        .requestMatchers("/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html",
-                                "/api/register","/api/login","/api/verifyWithOtp","/api/deleteUser/{id}").permitAll()
+                        .requestMatchers("/v3/api-docs/**",
+                                "/api/**",
+                                "/api/getProduct",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api/register",
+                                "/api/login",
+                                "/api/verifyWithOtp",
+                                "/api/getImage",
+                                "/api/deleteUser/{id}").permitAll()
                         .requestMatchers("/auth/**").permitAll()//login register api
 
                         //any other end pt req valid jwt token

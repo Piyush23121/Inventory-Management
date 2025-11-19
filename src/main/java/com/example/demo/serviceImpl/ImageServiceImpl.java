@@ -13,13 +13,16 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ImageServiceImpl implements ImageService {
@@ -66,13 +69,13 @@ public class ImageServiceImpl implements ImageService {
     }
     @Override
     public String getImage(ImageFile imageFile){
-        String dealerId=imageFile.getProduct().getDealerId().toString();
-        String url= ServletUriComponentsBuilder
+        Dealer byUserId = dealerRepository.findByUserId(imageFile.getProduct().getDealerId()).get();
+        return ServletUriComponentsBuilder
                 .fromCurrentContextPath()
                 .path("/api/getImage")
                 .queryParam("imageName",imageFile.getName())
-                .queryParam("dealerId",dealerId)
+                .queryParam("dealerId",byUserId.getDId().toString())
                 .toUriString();
-        return url;
+
     }
 }

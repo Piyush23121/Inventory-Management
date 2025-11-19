@@ -54,6 +54,7 @@ public class Product {
     private List<ImageFile> images;
 
     @OneToMany(mappedBy = "product",cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<CartItem> cartItems;
+    @JsonIgnore
+    private List<CartItem> cartItems=new ArrayList<>();
 }
 

@@ -37,9 +37,9 @@ public class ImageController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
-    @GetMapping("getImage")
-    public void getImage(@RequestParam String imageName, @RequestParam String dealerId, HttpServletResponse response, Authentication authentication) throws IOException {
+
+    @GetMapping("/getImage")
+    public void getImage(@RequestParam String imageName, @RequestParam String dealerId, HttpServletResponse response) throws IOException {
         Path path1 = Paths.get(path, dealerId, imageName);
         response.setContentType(Files.probeContentType(path1));
         Files.copy(path1, response.getOutputStream());

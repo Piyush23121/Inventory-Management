@@ -34,7 +34,6 @@ public class ProductController {
     }
 
     // All Roles - View Products
-    @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
     @GetMapping("/getProduct")
     public ResponseEntity<BaseResponseDTO<ProductDTO>> getProductById (@RequestParam Long id){
        ProductDTO product=productService.getProductById(id);

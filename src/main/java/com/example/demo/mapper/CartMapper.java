@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 public class CartMapper {
 
+
     //converrt cart to dto
     public static CartDTO toDTO(Cart cart){
         CartDTO dto=new CartDTO();
@@ -23,20 +24,13 @@ public class CartMapper {
         dto.setCustomerId(cart.getCustomer().getUserId());
         dto.setTotalQuantity(cart.getTotalQuantity());
         dto.setTotalAmount(cart.getTotalAmount());
-       List<CartItemDTO>  productDTOS=new ArrayList<>();
-        List<CartItem> items = cart.getItems();
-        for (CartItem item : items) {
-            Product product = item.getProduct();
-            ProductService service=new ProductServiceImpl();
-            ProductDTO productById = service.getProductById(product.getId());
-            CartItemDTO cartItemDTO=new CartItemDTO();
-            cartItemDTO.setProduct(productById);
-            cartItemDTO.setQuantity(item.getQuantity());
-            productDTOS.add(cartItemDTO);
-        }
-        dto.setItems(productDTOS);
 
-
+        dto.setItems(
+                cart.getItems()
+                        .stream()
+                        .map(CartMapper::toCartItemDTO)
+                        .collect(Collectors.toList())
+        );
         return dto;
     }
 
@@ -53,10 +47,12 @@ public class CartMapper {
     //cartItem to dto
     public static CartItemDTO toCartItemDTO(CartItem item){
         CartItemDTO dto=new CartItemDTO();
-        Product product = item.getProduct();
-
         dto.setQuantity(item.getQuantity());
         dto.setSubTotal(item.getSubTotal());
+
+        Product  product=item.getProduct();
+        ProductDTO productDTO=ProductMapper.toDTO(product);
+        dto.setProductDTO(productDTO);
 
         return dto;
     }

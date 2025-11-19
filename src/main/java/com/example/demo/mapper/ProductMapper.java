@@ -34,7 +34,7 @@ public class ProductMapper {
                 dto.setImages(
                         product.getImages()
                                 .stream()
-                                .map(ImageFile::getFilePath)
+                                .map(imageFile -> "/api/getImage/" +imageFile.getImgId())
                                 .collect(Collectors.toList())
                 );
             }

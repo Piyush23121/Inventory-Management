@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartItemDTO {
-    private ProductDTO product;
+    private ProductDTO productDTO;
     private int quantity;
     private double subTotal;
 

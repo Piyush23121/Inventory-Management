@@ -93,11 +93,23 @@ public class ProductServiceImpl implements ProductService {
                         .filter(product ->brand==null || product.getBrand().equalsIgnoreCase(brand))
                         .filter(product ->minPrice==null || product.getPrice()>=minPrice)
                         .filter(product ->maxPrice==null || product.getPrice()<=maxPrice)
-                        .map(ProductMapper::toDTO)
-                        .collect(Collectors.toList()),
-                pageable,
-                products.getTotalElements()
-        );
+                        .map(product -> {
+                            ProductDTO productDTO=ProductMapper.toDTO(product);
+                            List<ImageFile> imageFiles=product.getImages();
+                            List<String> imageUrls=new ArrayList<>();
+
+                            if (imageFiles!=null&& !imageFiles.isEmpty()) {
+                                for (ImageFile imageFile : imageFiles) {
+                                    String url=imageService.getImage(imageFile);
+                                    imageUrls.add(url);
+                                }
+                            }else {
+                                imageUrls.add("No image found");
+                            }
+                            productDTO.setImages(imageUrls);
+                            return productDTO;
+                        })
+                        .collect(Collectors.toList()));
     }
     @Override
     public ProductDTO updateProduct(Long id,ProductDTO productDTO){

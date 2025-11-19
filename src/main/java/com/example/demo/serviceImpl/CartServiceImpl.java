@@ -1,10 +1,8 @@
 package com.example.demo.serviceImpl;
 
 import com.example.demo.dto.CartDTO;
-import com.example.demo.entity.Cart;
-import com.example.demo.entity.CartItem;
-import com.example.demo.entity.Customer;
-import com.example.demo.entity.Product;
+import com.example.demo.dto.ProductDTO;
+import com.example.demo.entity.*;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.CartMapper;
 import com.example.demo.repository.CartItemRepository;
@@ -12,10 +10,12 @@ import com.example.demo.repository.CartRepository;
 import com.example.demo.repository.CustomerRepository;
 import com.example.demo.repository.ProductRepository;
 import com.example.demo.service.CartService;
+import com.example.demo.service.ImageService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -32,6 +32,8 @@ public class CartServiceImpl implements CartService {
     ProductRepository productRepository;
     @Autowired
     private CartItemRepository cartItemRepository;
+    @Autowired
+    private ImageService imageService;
 
     @Override
     public CartDTO addToCart(String customerId, Long productId, int quantity){
@@ -113,20 +115,40 @@ public class CartServiceImpl implements CartService {
 
         Cart cart=cartRepository.findByCustomer(customer)
                 .orElseThrow(()->new ResourceNotFoundException("Cart not found"));
-        List<CartItem> items = cart.getItems();
-        if(items.isEmpty()){
-            throw new ResourceNotFoundException("Items not found");
-        }
-        return CartMapper.toDTO(cart);
+        CartDTO cartDTO=CartMapper.toDTO(cart);
+
+        cartDTO.getItems().forEach(item->{
+
+            ProductDTO productDTO=item.getProductDTO();
+
+            Product product=productRepository.findById(productDTO.getId()).get();
+
+
+            List<ImageFile> images=product.getImages();
+            List<String> imageUrls =new ArrayList<>();
+
+            if (images!=null && !images.isEmpty()){
+                for (ImageFile imageName:images){
+                    imageUrls.add(imageService.getImage(imageName));
+            }
+
+           }else {
+               imageUrls.add("No image found");
+           }
+          productDTO.setImages(imageUrls);
+        });
+        return cartDTO;
     }
     @Override
     public void deleteCart(String customerId){
         Customer customer=customerRepository.findById(customerId)
                 .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
 
-        Cart cart=cartRepository.findByCustomer(customer)
-                .orElseThrow(()->new ResourceNotFoundException("Cart not found"));
-        cartRepository.delete(cart);
+        Cart cart=customer.getCart();
+        if (cart!=null){
+            customer.setCart(null);
+            cartRepository.delete(cart);
+        }
 
     }
     @Override

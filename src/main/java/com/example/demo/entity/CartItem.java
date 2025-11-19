@@ -23,11 +23,13 @@ public class CartItem {
     //Each item refer to one product
     @ManyToOne
     @JoinColumn(name = "productId",nullable = false)
+    @JsonIgnore
     private Product product;
 
     //Each item refers to one cart
     @ManyToOne
     @JoinColumn(name = "cartId", nullable = false)
+    @JsonIgnore
     private Cart cart;
 
     //no of unit for this product
