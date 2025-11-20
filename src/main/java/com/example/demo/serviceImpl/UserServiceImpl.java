@@ -1,9 +1,7 @@
 
 package com.example.demo.serviceImpl;
 
-import com.example.demo.dto.JwtResponse;
-import com.example.demo.dto.LoginRequest;
-import com.example.demo.dto.UserDTO;
+import com.example.demo.dto.*;
 import com.example.demo.entity.*;
 import com.example.demo.exception.*;
 import com.example.demo.mapper.UserMapper;
@@ -147,10 +145,6 @@ public class UserServiceImpl implements UserService {
         if (storedOtp.getOtp()!=otpValue){
             throw new InvalidInputException("Invalid Otp , Please Enter correct otp");
         }
-
-
-
-
             user.setStatus(true);
             userRepository.save(user);
             otpRepository.delete(storedOtp);
@@ -220,10 +214,53 @@ public class UserServiceImpl implements UserService {
             throw new AccessDeniedException("You are not allowed to delete other user");
         }
     }
+    @Override
+    public void forgotPassword(String email,Authentication authentication) {
+        String currentEmail = authentication.getName();
+        User user = userRepository.findByEmail(currentEmail)
+                .orElseThrow(()-> new AuthenticationFailureException("Email Not Registered"));
+        User currentUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
+
+//get user to be updated
+        User targetedUser = userRepository.findByEmail(currentEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + currentEmail));
+
+        //user can update itself only
+        if (!currentUser.getId().equals(targetedUser.getId())) {
+            throw new AccessDeniedException("Plz update your own account");
+        }
+        int otpValue=createOtp();
+        Otp otpUser = new Otp();
+        otpUser.setEmail(user.getEmail());
+        otpUser.setOtp(otpValue);
+        otpRepository.save(otpUser);
+
+        emailService.sendEmail(email,"Password Reset OTP","Your OTP is: " + otpValue + ". Do not Share It With Anyone");
+    }
+    @Override
+    public void resetPassword(ResetPassDTO resetPassDTO) {
+        if (!resetPassDTO.getOtp().matches("^[0-9]{6}$")){
+            throw new AccessDeniedException("Otp must be 6 Digits");
+        }
+        User user=userRepository.findByEmail(resetPassDTO.getEmail())
+                .orElseThrow(()-> new AuthenticationFailureException("Email Not Registered"));
+
+        Otp storedOtp=otpRepository.findByEmail(resetPassDTO.getEmail());
+        if (storedOtp==null){
+            throw new InvalidInputException("Invalid Otp , Please Enter correct otp");
+        }
+        if (storedOtp.getOtp()!=Integer.parseInt(resetPassDTO.getOtp())){
+            throw new InvalidInputException("Invalid Otp , Please Enter correct otp");
+        }
+        user.setPassword(passwordEncoder.encode(resetPassDTO.getNewPassword()));
+        userRepository.save(user);
+        otpRepository.delete(storedOtp);
+    }
 
     @Transactional
     @Override
-    public UserDTO updateUser(Long id, UserDTO userDTO, Authentication authentication) {
+    public UserDTO updateUser(Long id, UpdateUserDTO updateUserDTO, Authentication authentication) {
         //Get currently logged in user
         String currentEmail = authentication.getName();
 
@@ -239,13 +276,13 @@ public class UserServiceImpl implements UserService {
             throw new AccessDeniedException("Plz update your own account");
         }
 //only update these fields
-        if (userDTO.getName() != null) targetedUser.setName(userDTO.getName());
-        if (userDTO.getEmail() != null) targetedUser.setEmail(userDTO.getEmail());
-        if (userDTO.getMobileNo() != null) targetedUser.setMobileNo(userDTO.getMobileNo());
-        if (userDTO.getAddress() != null) targetedUser.setAddress(userDTO.getAddress());
+        if (updateUserDTO.getEmail() != null) targetedUser.setEmail(updateUserDTO.getEmail());
+        if (updateUserDTO.getMobileNo() != null) targetedUser.setMobileNo(updateUserDTO.getMobileNo());
+        if (updateUserDTO.getAddress() != null) targetedUser.setAddress(updateUserDTO.getAddress());
+        if (updateUserDTO.getName() != null) targetedUser.setName(updateUserDTO.getName());
 
-        if (userDTO.getPassword() != null && !userDTO.getPassword().isEmpty()) {
-            targetedUser.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+        if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isEmpty()) {
+            targetedUser.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
 
 
         }
@@ -264,7 +301,7 @@ public class UserServiceImpl implements UserService {
             case DEALER -> {
                 Dealer dealer = dealerRepository.findByUserId(updatedUser.getId())
                         .orElseThrow(() -> new ResourceNotFoundException("Dealer record missing"));
-                dealer = UserMapper.toDealer(updatedUser, userDTO, dealer);
+                dealer = UserMapper.toDealer(updatedUser, dealer);
                 dealerRepository.save(dealer);
             }
             case CUSTOMER -> {

@@ -35,8 +35,9 @@ public class    UserController {
         ResponseDto responseDto=new ResponseDto("Success","User Deleted Successfully");
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(responseDto);
         }
+        @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
         @PatchMapping("/updateUser")
-        public ResponseEntity<ResponseDto> updateUser(@Valid @RequestParam Long id, @RequestBody UserDTO userDTO,Authentication authentication){
+        public ResponseEntity<ResponseDto> updateUser( @RequestParam Long id, @Valid @RequestBody UpdateUserDTO userDTO,Authentication authentication){
         userService.updateUser(id,userDTO,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User updated successfully");
         return ResponseEntity.ok(responseDto);
@@ -46,6 +47,20 @@ public class    UserController {
         public ResponseEntity<ResponseDto> verifyOtp(@RequestParam String  otp,@RequestParam String email){
         userService.verifyOtp(otp,email);
         ResponseDto responseDto=new ResponseDto("Success","Otp verified successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        }
+
+        @PostMapping("/forgotPassword")
+    public ResponseEntity<ResponseDto> forgotPassword(@RequestParam String email,Authentication authentication){
+        userService.forgotPassword(email,authentication);
+        ResponseDto responseDto=new ResponseDto("Success","Otp Sent Successfully to Email");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        }
+
+        @PostMapping("/resetPassword")
+        public ResponseEntity<ResponseDto> resetPassword(@RequestBody ResetPassDTO resetPassDTO){
+        userService.resetPassword(resetPassDTO);
+        ResponseDto responseDto=new ResponseDto("Success","Password updated Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         }
 

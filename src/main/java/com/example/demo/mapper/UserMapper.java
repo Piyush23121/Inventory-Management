@@ -102,7 +102,7 @@ public class UserMapper {
 
         return customer;
     }
-    public static Dealer toDealer(User user,UserDTO userDTO,Dealer dealer) {
+    public static Dealer toDealer(User user,Dealer dealer) {
 
         dealer.setAddress(user.getAddress());
         dealer.setEmail(user.getEmail());
@@ -111,8 +111,7 @@ public class UserMapper {
         dealer.setName(user.getName());
         dealer.setMobileNo(user.getMobileNo());
        // dealer.setRole(user.getRole());
-        dealer.setCompanyName(userDTO.getCompanyName());
-        dealer.setGstinNo(userDTO.getGstinNo());
+
 
         return dealer;
 

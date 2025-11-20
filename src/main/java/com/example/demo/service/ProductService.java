@@ -24,7 +24,7 @@ public interface ProductService {
 
     void deleteProduct(Long id, Authentication authentication) throws IOException;
 
-    ProductDTO updateStock(Long id , int quantityChange);
+    ProductDTO updateStock(Long id , int quantityChange,Authentication authentication) ;
 
     List<ProductDTO> getLowStockProducts();
 };

@@ -54,9 +54,9 @@ public class ProductController {
 
     @PreAuthorize("hasAnyAuthority('DEALER')")
     @PatchMapping("/updateProduct")
-    public ResponseEntity<BaseResponseDTO<ProductDTO>> updateProduct(@RequestParam Long id, @RequestBody ProductDTO productDTO){
+    public ResponseEntity<ResponseDto> updateProduct(@RequestParam Long id, @RequestBody ProductDTO productDTO){
         ProductDTO updated=productService.updateProduct(id, productDTO);
-        return ResponseEntity.ok(new BaseResponseDTO<>("Success", "Product Updated Successfully", updated));
+        return ResponseEntity.ok(new ResponseDto("Success", "Product Updated Successfully"));
     }
 
     @PreAuthorize("hasAnyAuthority('DEALER')")
@@ -69,9 +69,9 @@ public class ProductController {
 
     @PreAuthorize("hasAuthority('DEALER')")
     @PatchMapping("/updateStock")
-    public ResponseEntity<BaseResponseDTO<ProductDTO>> updateStock(@RequestParam Long id, @RequestParam int quantityChange){
-        ProductDTO updated= productService.updateStock(id,quantityChange);
-        return ResponseEntity.ok(new BaseResponseDTO<>("Success","Product Updated Successfully",updated));
+    public ResponseEntity<ResponseDto> updateStock(@RequestParam Long id, @RequestParam int quantityChange,Authentication authentication){
+        ProductDTO updated= productService.updateStock(id,quantityChange,authentication);
+        return ResponseEntity.ok(new ResponseDto("Success","Product Updated Successfully"));
     }
 
     @PreAuthorize("hasAnyAuthority('DEALER')")

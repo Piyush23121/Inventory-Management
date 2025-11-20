@@ -6,7 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TransactionLogService {
+public class
+TransactionLogService {
 
     @Autowired
     private TransactionLogRepository transactionLogRepository;

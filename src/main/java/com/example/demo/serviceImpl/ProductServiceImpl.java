@@ -148,7 +148,12 @@ public class ProductServiceImpl implements ProductService {
         productRepository.deleteById(id);
     }
     @Override
-    public ProductDTO updateStock(Long id , int quantityChange){
+    public ProductDTO updateStock(Long id , int quantityChange,Authentication authentication){
+        String username = authentication.getName();
+
+        User user= userRepository.findByEmail(username)
+                .orElseThrow(()-> new ResourceNotFoundException("User not found."));
+
         Product product=productRepository.findById(id)
                 .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
 
@@ -157,17 +162,7 @@ public class ProductServiceImpl implements ProductService {
            throw new ResourceNotFoundException("Insufficient stock. Current Stock: "+ product.getQuantity());
         }
         product.setQuantity(newQuantity);
-
         Product savedProduct=productRepository.save(product);
-
-        //for saving transaction log
-        Object principal= SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String username= (principal instanceof UserDetails)
-                ?((UserDetails)principal).getUsername()
-                :principal.toString();
-
-        User user= userRepository.findByEmail(username)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found."));
 
         transactionLogService.saveLog(
                 savedProduct.getId(),
@@ -175,7 +170,6 @@ public class ProductServiceImpl implements ProductService {
                 quantityChange>=0 ? "INCREASE" : "DECREASE",
                 Math.abs(quantityChange)
         );
-
         return ProductMapper.toDTO(savedProduct);
     }
     @Override
