@@ -42,6 +42,10 @@ public class UpdateUserDTO {
 
     private String address;
 
+    private String oldPassword;
+    private String newPassword;
+    private String confirmNewPassword;
+
 
 
 

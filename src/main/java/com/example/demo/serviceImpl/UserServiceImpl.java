@@ -134,10 +134,8 @@ public class UserServiceImpl implements UserService {
             throw new AccessDeniedException("Otp must be 6 Digits");
         }
         int otpValue=Integer.parseInt(userOtp);
-        User user=userRepository.findByEmail(email).get();
-        if (user==null){
-            throw new AuthenticationFailureException("Email Not Registered");
-        }
+        User user=userRepository.findByEmail(email).
+                orElseThrow(()->new AccessDeniedException("User not found"));
         if (user.isStatus()){
             throw new AccessDeniedException("Email Already Registered");
         }
@@ -266,7 +264,6 @@ public class UserServiceImpl implements UserService {
 
         User currentUser = userRepository.findByEmail(currentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
-
 //get user to be updated
         User targetedUser = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
@@ -275,17 +272,29 @@ public class UserServiceImpl implements UserService {
         if (!currentUser.getId().equals(targetedUser.getId())) {
             throw new AccessDeniedException("Plz update your own account");
         }
+        if (updateUserDTO.getPassword()!=null){
+            throw new InvalidInputException("Bad Request");
+        }
+        if (updateUserDTO.getOldPassword() != null || updateUserDTO.getNewPassword() != null || updateUserDTO.getConfirmNewPassword() != null) {
+            if (updateUserDTO.getOldPassword() == null || updateUserDTO.getNewPassword() == null || updateUserDTO.getConfirmNewPassword() == null) {
+                throw new InvalidInputException("Old Password or New Password are null");
+            }
+
+        if (!passwordEncoder.matches(updateUserDTO.getOldPassword(), targetedUser.getPassword())) {
+            throw new InvalidInputException("Old Password Do not Match");
+        }
+        if (!updateUserDTO.getNewPassword().equals(updateUserDTO.getConfirmNewPassword())) {
+            throw new InvalidInputException("New Password Do not Match");
+        }
+        targetedUser.setPassword(passwordEncoder.encode(updateUserDTO.getNewPassword()));
+    }
 //only update these fields
         if (updateUserDTO.getEmail() != null) targetedUser.setEmail(updateUserDTO.getEmail());
         if (updateUserDTO.getMobileNo() != null) targetedUser.setMobileNo(updateUserDTO.getMobileNo());
         if (updateUserDTO.getAddress() != null) targetedUser.setAddress(updateUserDTO.getAddress());
         if (updateUserDTO.getName() != null) targetedUser.setName(updateUserDTO.getName());
 
-        if (updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isEmpty()) {
-            targetedUser.setPassword(passwordEncoder.encode(updateUserDTO.getPassword()));
 
-
-        }
         //save and return updated user
         User updatedUser = userRepository.save(targetedUser);
 
