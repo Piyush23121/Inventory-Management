@@ -11,7 +11,7 @@ public interface UserService {
     void deleteUser(Long id, Authentication authentication) throws IOException;
     UserDTO updateUser(Long id, UpdateUserDTO updateUserDTO, Authentication authentication);
     void verifyOtp(String userOtp,String email);
-    void forgotPassword(String email,Authentication authentication) ;
+    void forgotPassword(String email) ;
     void resetPassword(ResetPassDTO resetPassDTO);
 
 }

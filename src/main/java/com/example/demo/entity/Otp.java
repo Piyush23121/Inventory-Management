@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+
+
 @Entity
 @Getter
 @Setter
@@ -18,4 +21,6 @@ public class Otp {
     private Long id;
     private String email;
     private int otp;
+    private Timestamp created;
+    private Timestamp updated;
 }

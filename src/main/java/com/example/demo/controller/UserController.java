@@ -51,8 +51,8 @@ public class    UserController {
         }
 
         @PostMapping("/forgotPassword")
-    public ResponseEntity<ResponseDto> forgotPassword(@RequestParam String email,Authentication authentication){
-        userService.forgotPassword(email,authentication);
+    public ResponseEntity<ResponseDto> forgotPassword(@RequestParam String email){
+        userService.forgotPassword(email);
         ResponseDto responseDto=new ResponseDto("Success","Otp Sent Successfully to Email");
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         }
@@ -61,6 +61,13 @@ public class    UserController {
         public ResponseEntity<ResponseDto> resetPassword(@RequestBody ResetPassDTO resetPassDTO){
         userService.resetPassword(resetPassDTO);
         ResponseDto responseDto=new ResponseDto("Success","Password updated Successfully");
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        }
+
+        @PostMapping("/resendOtp")
+    public ResponseEntity<ResponseDto> resendOtp(@RequestParam String email){
+        userService.forgotPassword(email);
+        ResponseDto responseDto=new ResponseDto("Success","OTP Resend!");
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         }
 

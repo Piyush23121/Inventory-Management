@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -121,6 +123,8 @@ public class UserServiceImpl implements UserService {
         Otp otpUser = new Otp();
         otpUser.setEmail(userDTO.getEmail());
         otpUser.setOtp(otp);
+        otpUser.setCreated(new Timestamp(System.currentTimeMillis()));
+        otpUser.setUpdated(Timestamp.from(new Timestamp(System.currentTimeMillis()).toInstant().plusSeconds(120)));
         otpRepository.save(otpUser);
 
         emailService.sendEmail(userDTO.getEmail(),"OTP Verification",otp+"Verify Using This Otp and Do not Share It With Anyone");
@@ -139,9 +143,14 @@ public class UserServiceImpl implements UserService {
         if (user.isStatus()){
             throw new AccessDeniedException("Email Already Registered");
         }
+
         Otp storedOtp=otpRepository.findByEmail(email);
         if (storedOtp.getOtp()!=otpValue){
             throw new InvalidInputException("Invalid Otp , Please Enter correct otp");
+        }
+        Timestamp now=new Timestamp(System.currentTimeMillis());
+        if (!now.before(storedOtp.getUpdated())) {
+            throw new InvalidInputException("OTP Expired");
         }
             user.setStatus(true);
             userRepository.save(user);
@@ -213,25 +222,27 @@ public class UserServiceImpl implements UserService {
         }
     }
     @Override
-    public void forgotPassword(String email,Authentication authentication) {
-        String currentEmail = authentication.getName();
-        User user = userRepository.findByEmail(currentEmail)
+    public void forgotPassword(String email) {
+
+        User user = userRepository.findByEmail(email)
                 .orElseThrow(()-> new AuthenticationFailureException("Email Not Registered"));
-        User currentUser = userRepository.findByEmail(currentEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
 
 //get user to be updated
-        User targetedUser = userRepository.findByEmail(currentEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + currentEmail));
 
         //user can update itself only
-        if (!currentUser.getId().equals(targetedUser.getId())) {
-            throw new AccessDeniedException("Plz update your own account");
-        }
+
         int otpValue=createOtp();
         Otp otpUser = new Otp();
+        Otp byEmail=otpRepository.findByEmail(email);
+        if (byEmail==null){
+            otpUser=new Otp();
+        }else {
+            otpUser=byEmail;
+        }
         otpUser.setEmail(user.getEmail());
         otpUser.setOtp(otpValue);
+        otpUser.setCreated(new Timestamp(System.currentTimeMillis()));
+        otpUser.setUpdated(Timestamp.from(new Timestamp(System.currentTimeMillis()).toInstant().plusSeconds(120)));
         otpRepository.save(otpUser);
 
         emailService.sendEmail(email,"Password Reset OTP","Your OTP is: " + otpValue + ". Do not Share It With Anyone");
@@ -250,6 +261,10 @@ public class UserServiceImpl implements UserService {
         }
         if (storedOtp.getOtp()!=Integer.parseInt(resetPassDTO.getOtp())){
             throw new InvalidInputException("Invalid Otp , Please Enter correct otp");
+        }
+        Timestamp now=new Timestamp(System.currentTimeMillis());
+        if (!now.before(storedOtp.getUpdated())) {
+            throw new InvalidInputException("OTP Expired");
         }
         user.setPassword(passwordEncoder.encode(resetPassDTO.getNewPassword()));
         userRepository.save(user);
