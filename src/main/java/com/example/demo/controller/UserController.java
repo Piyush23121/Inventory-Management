@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController         //tells spring that this class handle http req and return json responce
 @RequestMapping("/api")
+@CrossOrigin(origins = " http://localhost:5173/")
 public class    UserController {
     @Autowired   //injects class
     private UserService userService;

@@ -127,7 +127,7 @@ public class UserServiceImpl implements UserService {
         otpUser.setUpdated(Timestamp.from(new Timestamp(System.currentTimeMillis()).toInstant().plusSeconds(120)));
         otpRepository.save(otpUser);
 
-        emailService.sendEmail(userDTO.getEmail(),"OTP Verification",otp+"Verify Using This Otp and Do not Share It With Anyone");
+        emailService.sendEmail(userDTO.getEmail(),"OTP Verification",otp + "Verify Using This Otp and Do not Share It With Anyone , OTP is valid only for 2 minutes");
         return UserMapper.toDTO(user);
     }
     @Override
@@ -245,7 +245,7 @@ public class UserServiceImpl implements UserService {
         otpUser.setUpdated(Timestamp.from(new Timestamp(System.currentTimeMillis()).toInstant().plusSeconds(120)));
         otpRepository.save(otpUser);
 
-        emailService.sendEmail(email,"Password Reset OTP","Your OTP is: " + otpValue + ". Do not Share It With Anyone");
+        emailService.sendEmail(email,"Password Reset OTP","Your OTP is: " + otpValue + ". Do not Share It With Anyone , OTP will be valid for only 2 minutes");
     }
     @Override
     public void resetPassword(ResetPassDTO resetPassDTO) {
