@@ -59,7 +59,7 @@ public class    UserController {
         }
 
         @PostMapping("/resetPassword")
-        public ResponseEntity<ResponseDto> resetPassword(@RequestBody ResetPassDTO resetPassDTO){
+        public ResponseEntity<ResponseDto> resetPassword(@Valid @RequestBody ResetPassDTO resetPassDTO){
         userService.resetPassword(resetPassDTO);
         ResponseDto responseDto=new ResponseDto("Success","Password updated Successfully");
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
