@@ -15,52 +15,53 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-@Component //mark this class as spring manage component (spring will auto create and mange instance of class)
+@Component
 public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Autowired
-    private Jwt jwt;// inject jwt to validte and extract info from jwt tokem
+    private Jwt jwt;
 
     @Override
-    //this method runs for every incoing req
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain)
-        throws ServletException, IOException{
+            throws ServletException, IOException {
 
-        //Get authorize header from incoming http req
         String header = request.getHeader("Authorization");
 
-        //check if header existand start with bearer (standerd jwt format
-        if(header !=null && header.startsWith("Bearer ")){
-            //Extract actual token string(skip first seven char "bearer "
+        if (header != null && header.startsWith("Bearer ")) {
+
             String token = header.substring(7);
 
-            //Validtae token using jwt
-            if(jwt.isTokenValid(token)){
-                String email= jwt.extractEmail(token);
-                String role= jwt.extractRole(token);
+            if (jwt.isTokenValid(token)
+                    && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                //Creat user detail obj(spring secu internal model)
-                //username=email
-                //password= blank(not needed for jwt)
-                //authorities =role from token
-                UserDetails userDetails= User.withUsername(email)
-                        .password("")
-                        .authorities(role)
-                        .build();
+                String email = jwt.extractEmail(token);
+                String role = jwt.extractRole(token);
 
-                //Create authentication obj to store in security context
-                UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                        userDetails, null,userDetails.getAuthorities());
+                if (email != null) {
 
-                //attach extra details abt the req like IP adress
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                //this tells spring security that user is now authenticated
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    UserDetails userDetails = User.withUsername(email)
+                            .password("")
+                            .authorities(role) // CUSTOMER / ADMIN / DEALER
+                            .build();
+
+                    UsernamePasswordAuthenticationToken authToken =
+                            new UsernamePasswordAuthenticationToken(
+                                    userDetails,
+                                    null,
+                                    userDetails.getAuthorities()
+                            );
+
+                    authToken.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                }
             }
         }
-        //continue filter chain move to next controller or component
+
         filterChain.doFilter(request, response);
     }
 }

@@ -38,8 +38,8 @@ public class    UserController {
         }
         @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
         @PatchMapping("/updateUser")
-        public ResponseEntity<ResponseDto> updateUser( @RequestParam Long id, @Valid @RequestBody UpdateUserDTO userDTO,Authentication authentication){
-        userService.updateUser(id,userDTO,authentication);
+        public ResponseEntity<ResponseDto> updateUser(  @Valid @RequestBody UpdateUserDTO userDTO,Authentication authentication){
+        userService.updateUser(userDTO,authentication);
         ResponseDto responseDto=new ResponseDto("Success","User updated successfully");
         return ResponseEntity.ok(responseDto);
 
@@ -72,6 +72,18 @@ public class    UserController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
         }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
+    @GetMapping("/user/me")
+    public ResponseEntity<BaseResponseDTO<UserDTO>> getLoggedUser(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        UserDTO user = userService.getUserByEmail(email);
+
+        return ResponseEntity.ok(
+                new BaseResponseDTO<>("Success", "User fetched successfully", user)
+        );
+    }
 
 
     }

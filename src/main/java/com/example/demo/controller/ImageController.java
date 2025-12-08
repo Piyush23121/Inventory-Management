@@ -22,29 +22,37 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = " http://localhost:5173/")
+@CrossOrigin(origins = "http://localhost:5173")
 public class ImageController {
-    @Autowired
-    private ImageService imageService;
 
     @Value("${project.image}")
     private String path;
 
+    @Autowired
+    private ImageService imageService;
+
     @PreAuthorize("hasAuthority('DEALER')")
     @PostMapping("/uploadImage")
-    public ResponseEntity<ResponseDto> uploadImage(@RequestParam("file") List<MultipartFile> files, Long productId, Authentication authentication) throws IOException {
-        List<ImageFile> imageFiles = imageService.uploadImage(productId, path, files, authentication);
-        ResponseDto responseDto = new ResponseDto("success", "Image added Successfully");
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
-    }
+    public ResponseEntity<ResponseDto> uploadImage(
+            @RequestParam("file") List<MultipartFile> files,
+            @RequestParam Long productId,
+            Authentication authentication) throws IOException {
 
+        imageService.uploadImage(productId, path, files, authentication);
+
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ResponseDto("success", "Images uploaded successfully"));
+    }
 
     @GetMapping("/getImage")
-    public void getImage(@RequestParam String imageName, @RequestParam String dealerId, HttpServletResponse response) throws IOException {
-        Path path1 = Paths.get(path, dealerId, imageName);
-        response.setContentType(Files.probeContentType(path1));
-        Files.copy(path1, response.getOutputStream());
+    public void getImage(
+            @RequestParam Long productId,
+            @RequestParam String imageName,
+            HttpServletResponse response) throws IOException {
+
+        Path imagePath = Paths.get(path, productId.toString(), imageName);
+
+        response.setContentType(Files.probeContentType(imagePath));
+        Files.copy(imagePath, response.getOutputStream());
     }
-
-
 }

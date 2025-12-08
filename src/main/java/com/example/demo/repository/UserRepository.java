@@ -1,8 +1,10 @@
 package com.example.demo.repository;
 
+import com.example.demo.entity.RoleType;
 import com.example.demo.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserRepository extends JpaRepository<User,Long> {
@@ -13,5 +15,9 @@ public interface UserRepository extends JpaRepository<User,Long> {
     boolean existsByEmail(String email);
     boolean existsByMobileNo(String mobileNo);
 
-    Long id(Long id);
+
+    List<User> findAll();
+
+    // ⭐ REQUIRED FOR ADMIN DASHBOARD (counts USER / DEALER / CUSTOMER / ADMIN)
+    long countByRole(RoleType role);
 }

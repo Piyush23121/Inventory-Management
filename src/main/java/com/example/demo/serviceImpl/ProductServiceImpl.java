@@ -1,5 +1,6 @@
 package com.example.demo.serviceImpl;
 
+import com.example.demo.dto.LowStockAdminDTO;
 import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.Dealer;
 import com.example.demo.entity.ImageFile;
@@ -17,7 +18,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -49,61 +49,63 @@ public class ProductServiceImpl implements ProductService {
 
 
     @Override
-    public ProductDTO addProduct(ProductDTO productDTO){
+    public ProductDTO addProduct(ProductDTO productDTO) {
         //Covert dto to entity before saving
-        Product product= ProductMapper.toEntity(productDTO);
+        Product product = ProductMapper.toEntity(productDTO);
         //Get login user email from jwt token
-        Authentication authentication=SecurityContextHolder.getContext().getAuthentication();
-        String email=authentication.getName();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String email = authentication.getName();
 
         //Fetch user details from db
-         Dealer dealer=dealerRepository.findByEmail(email)
-                .orElseThrow(()->new ResourceNotFoundException("Dealer not found: "+email));
+        Dealer dealer = dealerRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Dealer not found: " + email));
 
-       //Auto assign dealer id
-            product.setDealerId(dealer.getUserId());
+        //Auto assign dealer id
+        product.setDealerId(dealer.getUserId());
 
 //save product
-        Product savedProduct=productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
         return ProductMapper.toDTO(savedProduct);
     }
+
     @Override
-    public ProductDTO getProductById(Long id){
+    public ProductDTO getProductById(Long id) {
         //fetch product by id from db
-      Product product=productRepository.findById(id)
-              .orElseThrow(()-> new ResourceNotFoundException("Product not found."));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found."));
 
-      List<String> imageUrls=getImages(product);
-      ProductDTO productDTO=ProductMapper.toDTO(product);
-      productDTO.setImages(imageUrls);
+        List<String> imageUrls = getImages(product);
+        ProductDTO productDTO = ProductMapper.toDTO(product);
+        productDTO.setImages(imageUrls);
 
-      //return product
-              return productDTO;
+        //return product
+        return productDTO;
     }
+
     @Override
     public Page<ProductDTO> getAllProducts(String category,
                                            String brand,
                                            Double minPrice,
                                            Double maxPrice,
-                                           Pageable pageable){
-        Page<Product> products= productRepository.findAll(pageable);
+                                           Pageable pageable) {
+        Page<Product> products = productRepository.findAll(pageable);
         return new PageImpl<>(
                 products.stream()
-                        .filter(product ->category==null || product.getCategory().equalsIgnoreCase(category))
-                        .filter(product ->brand==null || product.getBrand().equalsIgnoreCase(brand))
-                        .filter(product ->minPrice==null || product.getPrice()>=minPrice)
-                        .filter(product ->maxPrice==null || product.getPrice()<=maxPrice)
+                        .filter(product -> category == null || product.getCategory().equalsIgnoreCase(category))
+                        .filter(product -> brand == null || product.getBrand().equalsIgnoreCase(brand))
+                        .filter(product -> minPrice == null || product.getPrice() >= minPrice)
+                        .filter(product -> maxPrice == null || product.getPrice() <= maxPrice)
                         .map(product -> {
-                            ProductDTO productDTO=ProductMapper.toDTO(product);
-                            List<ImageFile> imageFiles=product.getImages();
-                            List<String> imageUrls=new ArrayList<>();
+                            ProductDTO productDTO = ProductMapper.toDTO(product);
+                            List<ImageFile> imageFiles = product.getImages();
+                            List<String> imageUrls = new ArrayList<>();
 
-                            if (imageFiles!=null&& !imageFiles.isEmpty()) {
+                            if (imageFiles != null && !imageFiles.isEmpty()) {
                                 for (ImageFile imageFile : imageFiles) {
-                                    String url=imageService.getImage(imageFile);
+                                    String url = imageService.getImage(imageFile);
                                     imageUrls.add(url);
                                 }
-                            }else {
+                            } else {
                                 imageUrls.add("No image found");
                             }
                             productDTO.setImages(imageUrls);
@@ -111,35 +113,37 @@ public class ProductServiceImpl implements ProductService {
                         })
                         .collect(Collectors.toList()));
     }
+
     @Override
-    public ProductDTO updateProduct(Long id,ProductDTO productDTO){
+    public ProductDTO updateProduct(Long id, ProductDTO productDTO) {
         //find product from db by id
-        Product exitingProduct=productRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
-        if(productDTO.getDescription()!=null)
+        Product exitingProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
+        if (productDTO.getDescription() != null)
             exitingProduct.setDescription(productDTO.getDescription());
-        if(productDTO.getPrice()!=null)
+        if (productDTO.getPrice() != null)
             exitingProduct.setPrice(productDTO.getPrice());
 
 
         Product savedProduct = productRepository.save(exitingProduct);
         return ProductMapper.toDTO(savedProduct);
     }
+
     @Transactional
     @Override
-    public void deleteProduct(Long id,Authentication authentication) throws IOException {
+    public void deleteProduct(Long id, Authentication authentication) throws IOException {
         String currentUsername = authentication.getName();
         User currentUser = userRepository.findByEmail(currentUsername)
                 .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
 //find the user that has to be del
 
-        Product product=productRepository.findById(id)
-               .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
         if (!product.getDealerId().equals(currentUser.getId())) {
             throw new ResourceNotFoundException("You are not allowed to delete this product");
         }
-        List<ImageFile> imageFiles=imageRepository.findByProductId(product.getId());
+        List<ImageFile> imageFiles = imageRepository.findByProductId(product.getId());
         for (ImageFile imageFile : imageFiles) {
             Files.deleteIfExists(Paths.get(imageFile.getFilePath()));
         }
@@ -147,54 +151,90 @@ public class ProductServiceImpl implements ProductService {
         cartItemRepository.deleteByProductId(id);
         productRepository.deleteById(id);
     }
+
     @Override
-    public ProductDTO updateStock(Long id , int quantityChange,Authentication authentication){
+    public ProductDTO updateStock(Long id, int quantityChange, Authentication authentication) {
         String username = authentication.getName();
 
-        User user= userRepository.findByEmail(username)
-                .orElseThrow(()-> new ResourceNotFoundException("User not found."));
+        User user = userRepository.findByEmail(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found."));
 
-        Product product=productRepository.findById(id)
-                .orElseThrow(()-> new ResourceNotFoundException("Product not found with id: "+id));
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
-        int newQuantity=product.getQuantity() + quantityChange;
-        if (newQuantity<0){
-           throw new ResourceNotFoundException("Insufficient stock. Current Stock: "+ product.getQuantity());
+        int newQuantity = product.getQuantity() + quantityChange;
+        if (newQuantity < 0) {
+            throw new ResourceNotFoundException("Insufficient stock. Current Stock: " + product.getQuantity());
         }
         product.setQuantity(newQuantity);
-        Product savedProduct=productRepository.save(product);
+        Product savedProduct = productRepository.save(product);
 
         transactionLogService.saveLog(
                 savedProduct.getId(),
                 user.getId(),
-                quantityChange>=0 ? "INCREASE" : "DECREASE",
+                quantityChange >= 0 ? "INCREASE" : "DECREASE",
                 Math.abs(quantityChange)
         );
         return ProductMapper.toDTO(savedProduct);
     }
+
     @Override
-    public List<ProductDTO> getLowStockProducts(){
+    public List<ProductDTO> getLowStockProducts() {
         return productRepository.findAll()
                 .stream()
-                .filter(p->p.getQuantity()<p.getMinStockLevel())
+                .filter(p -> p.getQuantity() < p.getMinStockLevel())
                 .map(ProductMapper::toDTO)
                 .collect(Collectors.toList());
     }
 
-    private List<String> getImages(Product  product){
-        List<String> images=new ArrayList<>();
-        List<ImageFile> imageFiles=product.getImages();
-        if(imageFiles==null || imageFiles.isEmpty()){
-            String image="No images found";
+    private List<String> getImages(Product product) {
+        List<String> images = new ArrayList<>();
+        List<ImageFile> imageFiles = product.getImages();
+        if (imageFiles == null || imageFiles.isEmpty()) {
+            String image = "No images found";
             images.add(image);
-        }else {
-            for(ImageFile imageFile:imageFiles){
-                String image=imageService.getImage(imageFile);
+        } else {
+            for (ImageFile imageFile : imageFiles) {
+                String image = imageService.getImage(imageFile);
                 images.add(image);
             }
         }
         return images;
     }
+    @Override
+    public List<LowStockAdminDTO> getLowStockForAdmin() {
+
+        return productRepository.findAll().stream()
+                .filter(p -> p.getQuantity() < p.getMinStockLevel())   // dealer-defined min stock
+                .map(p -> {
+
+                    LowStockAdminDTO dto = new LowStockAdminDTO();
+                    dto.setProductId(p.getId());
+                    dto.setProductName(p.getName());
+                    dto.setQuantity(p.getQuantity());
+                    dto.setMinStockLevel(p.getMinStockLevel());
+
+                    // 👉 Fetch dealer info using dealerId
+                    if (p.getDealerId() != null) {
+                        User dealer = userRepository.findById(p.getDealerId()).orElse(null);
+
+                        if (dealer != null) {
+                            dto.setDealerId(dealer.getId());
+                            dto.setDealerName(dealer.getName());
+                            dto.setDealerEmail(dealer.getEmail());
+                        }
+                    }
+
+                    return dto;
+                })
+                .toList();
+    }
+
+
+
+
+
+
 
 }
 

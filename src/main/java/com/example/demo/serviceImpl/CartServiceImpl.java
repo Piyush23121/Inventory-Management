@@ -5,14 +5,12 @@ import com.example.demo.dto.ProductDTO;
 import com.example.demo.entity.*;
 import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.mapper.CartMapper;
-import com.example.demo.repository.CartItemRepository;
-import com.example.demo.repository.CartRepository;
-import com.example.demo.repository.CustomerRepository;
-import com.example.demo.repository.ProductRepository;
+import com.example.demo.repository.*;
 import com.example.demo.service.CartService;
 import com.example.demo.service.ImageService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -34,154 +32,177 @@ public class CartServiceImpl implements CartService {
     private CartItemRepository cartItemRepository;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private UserRepository userRepository;
 
     @Override
-    public CartDTO addToCart(String customerId, Long productId, int quantity){
-        //Fetch customer
-        Customer customer=customerRepository.findById(customerId)
-                .orElseThrow(()-> new ResourceNotFoundException("Customer not found"));
+    public CartDTO addToCart(Authentication authentication, Long productId, int quantity) {
 
-        //fetch product
-        Product product=productRepository.findById(productId)
-                .orElseThrow(()->new ResourceNotFoundException("Product not found"));
+        String email = authentication.getName();
 
-        //Find existing cart or create new
-        Cart cart=cartRepository.findByCustomer(customer)
-                .orElseGet(()->{
-                    Cart newCart=new Cart();
-                    newCart.setCustomer(customer);
-                    return cartRepository.save(newCart);
+        // find User by email
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        // find Customer by userId
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        // find product
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+
+        // find or create cart
+        Cart cart = cartRepository.findByCustomer(customer)
+                .orElseGet(() -> {
+                    Cart c = new Cart();
+                    c.setCustomer(customer);
+                    return cartRepository.save(c);
                 });
-        //Check if item already exist in cart
-        Optional<CartItem> existingItem=cart.getItems().stream()
-                .filter(i->i.getProduct().getId().equals(productId))
+
+        // check if item exists
+        Optional<CartItem> existing = cart.getItems()
+                .stream()
+                .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst();
 
-        if (existingItem.isPresent()){
-            CartItem item=existingItem.get();
-            item.setQuantity(item.getQuantity()+quantity);
-            item.setSubTotal(product.getPrice()*item.getQuantity());
-        }else {
-            CartItem newItem=new CartItem();
+        if (existing.isPresent()) {
+            CartItem item = existing.get();
+            item.setQuantity(item.getQuantity() + quantity);
+            item.setSubTotal(product.getPrice() * item.getQuantity());
+        } else {
+            CartItem newItem = new CartItem();
             newItem.setProduct(product);
             newItem.setCart(cart);
             newItem.setQuantity(quantity);
-            newItem.setSubTotal(product.getPrice()*quantity);
+            newItem.setSubTotal(product.getPrice() * quantity);
             cart.getItems().add(newItem);
-
         }
-        //REcalculate total amt and total quantity
-        double totalAmount=cart.getItems().stream()
+
+        // recalc totals
+        double totalAmount = cart.getItems().stream()
                 .mapToDouble(CartItem::getSubTotal)
                 .sum();
-        cart.setTotalAmount(totalAmount);
-
-        int totalQuantity=cart.getItems().stream()
+        int totalQuantity = cart.getItems().stream()
                 .mapToInt(CartItem::getQuantity)
                 .sum();
+
+        cart.setTotalAmount(totalAmount);
         cart.setTotalQuantity(totalQuantity);
 
-        //save cart and return dto
-            Cart savedCart=cartRepository.save(cart);
-            return CartMapper.toDTO(savedCart);
+        // save and return
+        Cart saved = cartRepository.save(cart);
+        return CartMapper.toDTO(saved);
     }
+
     @Override
-    public CartDTO removeFromCart(String customerId,Long productId){
-        Customer customer=customerRepository.findById(customerId)
-                .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
+    public CartDTO getCart(Authentication auth) {
 
-        Cart cart=cartRepository.findByCustomer(customer)
-                .orElseThrow(()->new ResourceNotFoundException("cart not found"));
+        String email = auth.getName();
 
-                cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-                double totalAmount=cart.getItems().stream()
-                        .mapToDouble(CartItem::getSubTotal)
-                        .sum();
-                cart.setTotalAmount(totalAmount);
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-                int totalQuantity=cart.getItems().stream()
-                        .mapToInt(CartItem::getQuantity)
-                        .sum();
-                cart.setTotalQuantity(totalQuantity);
+        Cart cart = cartRepository.findByCustomer(customer)
+                .orElseGet(() -> {
+                    Cart c = new Cart();
+                    c.setCustomer(customer);
+                    return cartRepository.save(c);
+                });
 
-                Cart updatedCart=cartRepository.save(cart);
-                return CartMapper.toDTO(updatedCart);
+        return CartMapper.toDTO(cart);
     }
+
+    // -------------------------
+    // 3) UPDATE QUANTITY
+    // -------------------------
     @Override
-    public CartDTO getCart(String customerId){
-        Customer customer=customerRepository.findById(customerId)
-                .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
+    public CartDTO updateCartItemQuantity(Authentication auth, Long productId, int newQuantity) {
 
-        Cart cart=cartRepository.findByCustomer(customer)
-                .orElseThrow(()->new ResourceNotFoundException("Cart not found"));
-        CartDTO cartDTO=CartMapper.toDTO(cart);
+        String email = auth.getName();
 
-        cartDTO.getItems().forEach(item->{
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-            ProductDTO productDTO=item.getProductDTO();
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
 
-            Product product=productRepository.findById(productDTO.getId()).get();
+        Cart cart = cartRepository.findByCustomer(customer)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
 
-
-            List<ImageFile> images=product.getImages();
-            List<String> imageUrls =new ArrayList<>();
-
-            if (images!=null && !images.isEmpty()){
-                for (ImageFile imageName:images){
-                    imageUrls.add(imageService.getImage(imageName));
-            }
-
-           }else {
-               imageUrls.add("No image found");
-           }
-          productDTO.setImages(imageUrls);
-        });
-        return cartDTO;
-    }
-    @Override
-    public void deleteCart(String customerId){
-        Customer customer=customerRepository.findById(customerId)
-                .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
-
-        Cart cart=customer.getCart();
-        if (cart!=null){
-            customer.setCart(null);
-            cartRepository.delete(cart);
-        }
-
-    }
-    @Override
-    public  CartDTO updateCartItemQuantity(String customerId,Long productId,int newQuantity){
-        Customer customer=customerRepository.findById(customerId)
-                .orElseThrow(()->new ResourceNotFoundException("Customer not found"));
-
-        Cart cart=cartRepository.findByCustomer(customer)
-                .orElseThrow(()->new ResourceNotFoundException("Cart not found"));
-
-        //find item to update
-        CartItem item=cart.getItems().stream()
-                .filter(i->i.getProduct().getId().equals(productId))
+        CartItem item = cart.getItems().stream()
+                .filter(i -> i.getProduct().getId().equals(productId))
                 .findFirst()
-                .orElseThrow(()->new ResourceNotFoundException("Product not found in Cart"));
+                .orElseThrow(() -> new ResourceNotFoundException("Product not in cart"));
 
-        //update quantity and subtotal
-        item.setQuantity(newQuantity);
-        item.setSubTotal(item.getProduct().getPrice()*newQuantity);
+        if (newQuantity <= 0) {
+            cart.getItems().remove(item);
+        } else {
+            item.setQuantity(newQuantity);
+            item.setSubTotal(item.getProduct().getPrice() * newQuantity);
+        }
 
-        //Recalculate total
-        double totalAmount=cart.getItems().stream()
-                .mapToDouble(CartItem::getSubTotal)
-                .sum();
-        cart.setTotalAmount(totalAmount);
+        recalcCart(cart);
 
-        int totalQuantity=cart.getItems().stream()
-                .mapToInt(CartItem::getQuantity)
-                .sum();
-        cart.setTotalQuantity(totalQuantity);
-
-        Cart updatedCart=cartRepository.save(cart);
-        return CartMapper.toDTO(updatedCart);
+        return CartMapper.toDTO(cartRepository.save(cart));
     }
 
+    // -------------------------
+    // 4) REMOVE ITEM
+    // -------------------------
+    @Override
+    public CartDTO removeFromCart(Authentication auth, Long productId) {
+
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Cart cart = cartRepository.findByCustomer(customer)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        cart.getItems().removeIf(item -> item.getProduct().getId().equals(productId));
+
+        recalcCart(cart);
+
+        return CartMapper.toDTO(cartRepository.save(cart));
+    }
+
+    // -------------------------
+    // 5) CLEAR CART
+    // -------------------------
+    @Override
+    public void deleteCart(Authentication auth) {
+
+        String email = auth.getName();
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        Customer customer = customerRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+
+        Cart cart = cartRepository.findByCustomer(customer)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        cart.getItems().clear();
+        cart.setTotalAmount(0);
+        cart.setTotalQuantity(0);
+
+        cartRepository.save(cart);
+    }
+
+    // -------------------------
+    // Helper to recalc totals
+    // -------------------------
+    private void recalcCart(Cart cart) {
+        cart.setTotalAmount(cart.getItems().stream().mapToDouble(CartItem::getSubTotal).sum());
+        cart.setTotalQuantity(cart.getItems().stream().mapToInt(CartItem::getQuantity).sum());
+    }
 }

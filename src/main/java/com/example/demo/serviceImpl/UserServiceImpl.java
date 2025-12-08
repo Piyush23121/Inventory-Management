@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -80,10 +81,10 @@ public class UserServiceImpl implements UserService {
 
             switch (role) {
                 case ADMIN -> {
-                    if (userDTO.getCompanyName() != null)
-                        throw new AccessDeniedException("Company Name is Available for dealers only");
-                    if (userDTO.getGstinNo() != null)
-                        throw new AccessDeniedException("GSTIN Number is Available for dealers only");
+//                    if (userDTO.getCompanyName() != null)
+//                        throw new AccessDeniedException("Company Name is Available for dealers only");
+//                    if (userDTO.getGstinNo() != null)
+//                        throw new AccessDeniedException("GSTIN Number is Available for dealers only");
 
                     long adminCount = adminRepository.count();
                     Admin admin = UserMapper.toAdmin(user);
@@ -106,10 +107,10 @@ public class UserServiceImpl implements UserService {
 
                 }
                 case CUSTOMER -> {
-                    if (userDTO.getCompanyName() != null)
-                        throw new AccessDeniedException("Company Name is Available for dealers only");
-                    if (userDTO.getGstinNo() != null)
-                        throw new AccessDeniedException("GSTIN Number is Available for dealers only");
+//                    if (userDTO.getCompanyName() != null)
+//                        throw new AccessDeniedException("Company Name is Available for dealers only");
+//                    if (userDTO.getGstinNo() != null)
+//                        throw new AccessDeniedException("GSTIN Number is Available for dealers only");
 
                     long customerCount = customerRepository.count();
                     Customer customer = UserMapper.toCustomer(user);
@@ -270,74 +271,138 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         otpRepository.delete(storedOtp);
     }
-
-    @Transactional
     @Override
-    public UserDTO updateUser(Long id, UpdateUserDTO updateUserDTO, Authentication authentication) {
-        //Get currently logged in user
+    @Transactional
+    public UserDTO updateUser(UpdateUserDTO updateUserDTO, Authentication authentication) {
+
         String currentEmail = authentication.getName();
 
         User currentUser = userRepository.findByEmail(currentEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
-//get user to be updated
-        User targetedUser = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
 
-        //user can update itself only
-        if (!currentUser.getId().equals(targetedUser.getId())) {
-            throw new AccessDeniedException("Plz update your own account");
-        }
-        if (updateUserDTO.getPassword()!=null){
-            throw new InvalidInputException("Bad Request");
-        }
-        if (updateUserDTO.getOldPassword() != null || updateUserDTO.getNewPassword() != null || updateUserDTO.getConfirmNewPassword() != null) {
-            if (updateUserDTO.getOldPassword() == null || updateUserDTO.getNewPassword() == null || updateUserDTO.getConfirmNewPassword() == null) {
-                throw new InvalidInputException("Old Password or New Password are null");
-            }
+        User targetedUser = currentUser;  // 🔥 always update logged-in user
 
-        if (!passwordEncoder.matches(updateUserDTO.getOldPassword(), targetedUser.getPassword())) {
-            throw new InvalidInputException("Old Password Do not Match");
+        // password update logic stays same...
+        if (updateUserDTO.getOldPassword() != null ||
+                updateUserDTO.getNewPassword() != null ||
+                updateUserDTO.getConfirmNewPassword() != null) {
+
+            if (updateUserDTO.getOldPassword() == null ||
+                    updateUserDTO.getNewPassword() == null ||
+                    updateUserDTO.getConfirmNewPassword() == null)
+                throw new InvalidInputException("Old and new passwords required");
+
+            if (!passwordEncoder.matches(updateUserDTO.getOldPassword(), targetedUser.getPassword()))
+                throw new InvalidInputException("Old Password Do not Match");
+
+            if (!updateUserDTO.getNewPassword().equals(updateUserDTO.getConfirmNewPassword()))
+                throw new InvalidInputException("New Password Do not Match");
+
+            targetedUser.setPassword(passwordEncoder.encode(updateUserDTO.getNewPassword()));
         }
-        if (!updateUserDTO.getNewPassword().equals(updateUserDTO.getConfirmNewPassword())) {
-            throw new InvalidInputException("New Password Do not Match");
-        }
-        targetedUser.setPassword(passwordEncoder.encode(updateUserDTO.getNewPassword()));
-    }
-//only update these fields
+
+        // update fields
         if (updateUserDTO.getEmail() != null) targetedUser.setEmail(updateUserDTO.getEmail());
         if (updateUserDTO.getMobileNo() != null) targetedUser.setMobileNo(updateUserDTO.getMobileNo());
         if (updateUserDTO.getAddress() != null) targetedUser.setAddress(updateUserDTO.getAddress());
         if (updateUserDTO.getName() != null) targetedUser.setName(updateUserDTO.getName());
 
-
-        //save and return updated user
         User updatedUser = userRepository.save(targetedUser);
 
-
-        //update same rcord in role table
-        switch (updatedUser.getRole()) {
-            case ADMIN -> {
-                Admin admin = adminRepository.findByUserId(updatedUser.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Admin record missing"));
-                admin = UserMapper.toAdmin(updatedUser, admin);
-                adminRepository.save(admin);
-            }
-            case DEALER -> {
-                Dealer dealer = dealerRepository.findByUserId(updatedUser.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Dealer record missing"));
-                dealer = UserMapper.toDealer(updatedUser, dealer);
-                dealerRepository.save(dealer);
-            }
-            case CUSTOMER -> {
-                Customer customer = customerRepository.findByUserId(updatedUser.getId())
-                        .orElseThrow(() -> new ResourceNotFoundException("Customer is missing"));
-                customer = UserMapper.toCustomer(updatedUser, customer);
-                customerRepository.save(customer);
-            }
-
-        }//return updated user dto
         return UserMapper.toDTO(updatedUser);
     }
+
+
+//    @Transactional
+//    @Override
+//    public UserDTO updateUser(Long id, UpdateUserDTO updateUserDTO, Authentication authentication) {
+//        //Get currently logged in user
+//        String currentEmail = authentication.getName();
+//
+//        User currentUser = userRepository.findByEmail(currentEmail)
+//                .orElseThrow(() -> new ResourceNotFoundException("Logged in user not found"));
+////get user to be updated
+//        User targetedUser = userRepository.findById(id)
+//                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + id));
+//
+//        //user can update itself only
+//        if (!currentUser.getId().equals(targetedUser.getId())) {
+//            throw new AccessDeniedException("Plz update your own account");
+//        }
+//        if (updateUserDTO.getPassword()!=null){
+//            throw new InvalidInputException("Bad Request");
+//        }
+//        if (updateUserDTO.getOldPassword() != null || updateUserDTO.getNewPassword() != null || updateUserDTO.getConfirmNewPassword() != null) {
+//            if (updateUserDTO.getOldPassword() == null || updateUserDTO.getNewPassword() == null || updateUserDTO.getConfirmNewPassword() == null) {
+//                throw new InvalidInputException("Old Password or New Password are null");
+//            }
+//
+//        if (!passwordEncoder.matches(updateUserDTO.getOldPassword(), targetedUser.getPassword())) {
+//            throw new InvalidInputException("Old Password Do not Match");
+//        }
+//        if (!updateUserDTO.getNewPassword().equals(updateUserDTO.getConfirmNewPassword())) {
+//            throw new InvalidInputException("New Password Do not Match");
+//        }
+//        targetedUser.setPassword(passwordEncoder.encode(updateUserDTO.getNewPassword()));
+//    }
+////only update these fields
+//        if (updateUserDTO.getEmail() != null) targetedUser.setEmail(updateUserDTO.getEmail());
+//        if (updateUserDTO.getMobileNo() != null) targetedUser.setMobileNo(updateUserDTO.getMobileNo());
+//        if (updateUserDTO.getAddress() != null) targetedUser.setAddress(updateUserDTO.getAddress());
+//        if (updateUserDTO.getName() != null) targetedUser.setName(updateUserDTO.getName());
+//
+//
+//        //save and return updated user
+//        User updatedUser = userRepository.save(targetedUser);
+//
+//
+//        //update same rcord in role table
+//        switch (updatedUser.getRole()) {
+//            case ADMIN -> {
+//                Admin admin = adminRepository.findByUserId(updatedUser.getId())
+//                        .orElseThrow(() -> new ResourceNotFoundException("Admin record missing"));
+//                admin = UserMapper.toAdmin(updatedUser, admin);
+//                adminRepository.save(admin);
+//            }
+//            case DEALER -> {
+//                Dealer dealer = dealerRepository.findByUserId(updatedUser.getId())
+//                        .orElseThrow(() -> new ResourceNotFoundException("Dealer record missing"));
+//                dealer = UserMapper.toDealer(updatedUser, dealer);
+//                dealerRepository.save(dealer);
+//            }
+//            case CUSTOMER -> {
+//                Customer customer = customerRepository.findByUserId(updatedUser.getId())
+//                        .orElseThrow(() -> new ResourceNotFoundException("Customer is missing"));
+//                customer = UserMapper.toCustomer(updatedUser, customer);
+//                customerRepository.save(customer);
+//            }
+//
+//        }//return updated user dto
+//        return UserMapper.toDTO(updatedUser);
+//    }
+    @Override
+    public UserDTO getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return UserMapper.toDTO(user);
+    }
+
+    @Override
+    public List<UserDTO> getAllUsers() {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> {
+                    UserDTO dto = new UserDTO();
+                    dto.setId(user.getId());
+                    dto.setName(user.getName());
+                    dto.setEmail(user.getEmail());
+                    dto.setRole(user.getRole());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
     private int createOtp() {
         Random random = new Random();
         int otp = 100000+random.nextInt(900000);

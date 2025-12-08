@@ -28,11 +28,12 @@ public class ProductController {
     //Admin - add product
     @PreAuthorize("hasAuthority('DEALER')")
     @PostMapping("/addProducts")
-    public ResponseEntity<ResponseDto> addProduct(@RequestBody ProductDTO dto){
-        productService.addProduct(dto);
-        ResponseDto responseDto=new ResponseDto("success","Product added Successfully");
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+    public ResponseEntity<BaseResponseDTO<ProductDTO>> addProduct(@RequestBody ProductDTO dto){
+        ProductDTO saved = productService.addProduct(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new BaseResponseDTO<>("success", "Product added successfully", saved
+                ));
     }
+
 
     // All Roles - View Products
     @GetMapping("/getProduct")
@@ -41,7 +42,6 @@ public class ProductController {
        return ResponseEntity.ok(new BaseResponseDTO<>("Success","Product fetched Successfully",product));
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN','DEALER','CUSTOMER')")
     @GetMapping("/getAllProducts")
     public ResponseEntity<BaseResponseDTO<Page<ProductDTO>>> getAllProducts(
             @RequestParam(required = false) String category,
@@ -75,7 +75,7 @@ public class ProductController {
         return ResponseEntity.ok(new ResponseDto("Success","Product Updated Successfully"));
     }
 
-    @PreAuthorize("hasAnyAuthority('DEALER')")
+    @PreAuthorize("hasAnyAuthority('DEALER','ADMIN')")
     @GetMapping("/low-stock")
     public ResponseEntity<BaseResponseDTO<List<ProductDTO>>> getLowStockProducts(){
         List<ProductDTO> lowStock = productService.getLowStockProducts();

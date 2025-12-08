@@ -1,6 +1,8 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.LowStockAdminDTO;
 import com.example.demo.dto.ProductDTO;
+import com.example.demo.entity.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
@@ -27,4 +29,8 @@ public interface ProductService {
     ProductDTO updateStock(Long id , int quantityChange,Authentication authentication) ;
 
     List<ProductDTO> getLowStockProducts();
+    List<LowStockAdminDTO> getLowStockForAdmin();
+
+
+
 };
